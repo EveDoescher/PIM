@@ -441,43 +441,6 @@ Quando você faz login como aluno, chega ao seu **Dashboard** - sua área de est
 
 ---
 
-## 📞 SUPORTE E CONTATO
-
-### 🆘 Precisa de Ajuda?
-
-**Suporte Técnico:**
-- **Email:** suporte@sistemacademico.edu.br
-- **Telefone:** (11) 1234-5678
-- **Horário:** Segunda a Sexta, 8h às 18h
-
-**Suporte Pedagógico:**
-- **Email:** pedagogico@sistemacademico.edu.br
-- **Telefone:** (11) 1234-5679
-- **Horário:** Segunda a Sexta, 8h às 17h
-
-### 📚 Recursos Adicionais
-
-**Tutoriais em Vídeo:** [link para vídeos]  
-**FAQ - Perguntas Frequentes:** [link para FAQ]  
-**Fórum da Comunidade:** [link para fórum]  
-
----
-
-## 🔄 ATUALIZAÇÕES DO SISTEMA
-
-**Como saber se há atualizações:**
-- O sistema notifica automaticamente
-- Verifique a versão no menu "Sobre"
-- Acompanhe os comunicados da instituição
-
-**O que fazer quando há atualização:**
-- Salve seu trabalho atual
-- Feche o sistema
-- Instale a atualização
-- Reinicie o programa
-
----
-
 ## 📖 GLOSSÁRIO
 
 **RA (Registro Acadêmico):** Código único de identificação no formato R123456  
@@ -510,7 +473,3 @@ Parabéns! Agora você conhece todas as funcionalidades do Sistema Acadêmico Co
 - Dê sugestões para melhorarmos o sistema
 
 **Bons estudos e boa sorte!** 🚀
-
----
-
-*Este manual foi criado pensando em você. Se tiver sugestões de melhoria, entre em contato conosco. Queremos que sua experiência seja a melhor possível!*
