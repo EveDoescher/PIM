@@ -3,10 +3,9 @@ from datetime import datetime, timedelta
 from backend.database import insert_task
 
 class CriarTarefa(ft.Container):
-    """Classe responsável pela criação de tarefas com design clean e moderno."""
 
     def __init__(self, page: ft.Page, controller):
-        """Inicializa a tela de criação de tarefas."""
+        # Inicializa a interface de criação de tarefas
         super().__init__(
             expand=True,
             width=None,
@@ -18,15 +17,14 @@ class CriarTarefa(ft.Container):
         self.controller = controller
         
         self.is_loading = False
-        self.selected_date = datetime.now() + timedelta(days=7)  # Padrão: 1 semana
+        self.selected_date = datetime.now() + timedelta(days=7)
         
         self.create_components()
         self.setup_layout()
 
     def create_components(self):
-        """Cria todos os componentes da interface"""
+        # Cria todos os componentes da interface de usuário
         
-        # Botão voltar clean - MAIOR
         self.back_button = ft.Container(
             content=ft.Row([
                 ft.Icon(ft.icons.ARROW_BACK_ROUNDED, color=ft.colors.PINK_500, size=24),
@@ -47,7 +45,6 @@ class CriarTarefa(ft.Container):
             on_click=self.go_back
         )
 
-        # Campo título clean - MAIOR
         self.title_field = ft.TextField(
             label="Título da Tarefa",
             width=700,
@@ -75,7 +72,6 @@ class CriarTarefa(ft.Container):
             on_change=self.update_preview
         )
 
-        # Campo descrição clean - MAIOR
         self.description_field = ft.TextField(
             label="Descrição da Tarefa",
             width=700,
@@ -106,7 +102,6 @@ class CriarTarefa(ft.Container):
             on_change=self.update_preview
         )
 
-        # Seletor de data
         self.date_picker = ft.DatePicker(
             first_date=datetime.now(),
             last_date=datetime.now() + timedelta(days=365),
@@ -114,7 +109,6 @@ class CriarTarefa(ft.Container):
         )
         self.page.overlay.append(self.date_picker)
 
-        # Botão de data clean - MAIOR
         self.date_button = ft.Container(
             content=ft.Row([
                 ft.Icon(ft.icons.CALENDAR_TODAY_ROUNDED, color=ft.colors.PINK_400, size=24),
@@ -142,7 +136,6 @@ class CriarTarefa(ft.Container):
             on_click=self.open_date_picker
         )
 
-        # Campo horário clean - MAIOR
         self.time_field = ft.TextField(
             label="Horário (HH:MM)",
             width=330,
@@ -171,7 +164,6 @@ class CriarTarefa(ft.Container):
             on_change=self.validate_time
         )
 
-        # Loading indicator - MAIOR
         self.loading_indicator = ft.ProgressRing(
             width=35,
             height=35,
@@ -180,7 +172,6 @@ class CriarTarefa(ft.Container):
             visible=False
         )
 
-        # Botão criar tarefa clean - MAIOR
         self.create_button = ft.Container(
             content=ft.Row([
                 self.loading_indicator,
@@ -208,7 +199,6 @@ class CriarTarefa(ft.Container):
             on_click=self.create_task
         )
 
-        # Card de preview clean - MAIOR
         self.preview_card = ft.Container(
             content=ft.Column([
                 ft.Row([
@@ -259,9 +249,8 @@ class CriarTarefa(ft.Container):
         )
 
     def setup_layout(self):
-        """Configura o layout da página"""
+        # Configura o layout principal da página
         
-        # Header clean - MAIOR
         header = ft.Container(
             content=ft.Row([
                 self.back_button,
@@ -286,7 +275,6 @@ class CriarTarefa(ft.Container):
             padding=ft.padding.symmetric(horizontal=60, vertical=45)
         )
 
-        # Formulário principal - MAIOR
         form_section = ft.Container(
             content=ft.Column([
                 self.title_field,
@@ -294,7 +282,6 @@ class CriarTarefa(ft.Container):
                 self.description_field,
                 ft.Container(height=40),
                 
-                # Data e horário lado a lado
                 ft.Row([
                     ft.Column([
                         ft.Text(
@@ -325,18 +312,15 @@ class CriarTarefa(ft.Container):
             padding=ft.padding.symmetric(horizontal=60)
         )
 
-        # Layout principal com duas colunas
         main_content = ft.Row([
-            # Coluna do formulário
             ft.Container(
                 content=form_section,
                 expand=2
             ),
             
-            # Coluna do preview
             ft.Container(
                 content=ft.Column([
-                    ft.Container(height=140),  # Espaço do header
+                    ft.Container(height=140),
                     self.preview_card
                 ], horizontal_alignment=ft.CrossAxisAlignment.CENTER),
                 expand=1,
@@ -344,7 +328,6 @@ class CriarTarefa(ft.Container):
             )
         ], alignment=ft.MainAxisAlignment.START)
 
-        # Layout principal com fundo branco clean
         self.content = ft.Container(
             expand=True,
             width=None,
@@ -363,11 +346,11 @@ class CriarTarefa(ft.Container):
         )
 
     def open_date_picker(self, e):
-        """Abre o seletor de data"""
+        # Abre o seletor de data
         self.date_picker.pick_date()
 
     def on_date_change(self, e):
-        """Callback para mudança de data"""
+        # Processa mudança de data selecionada
         if self.date_picker.value:
             self.selected_date = self.date_picker.value
             self.date_button.content.controls[1].value = self.selected_date.strftime("%d/%m/%Y")
@@ -375,16 +358,13 @@ class CriarTarefa(ft.Container):
             self.page.update()
 
     def validate_time(self, e):
-        """Valida formato do horário"""
+        # Valida e formata o horário inserido
         value = e.control.value
-        # Remover caracteres não numéricos exceto :
         cleaned = ''.join(c for c in value if c.isdigit() or c == ':')
         
-        # Aplicar máscara HH:MM
         if len(cleaned) > 2 and ':' not in cleaned:
             cleaned = cleaned[:2] + ':' + cleaned[2:]
         
-        # Limitar a 5 caracteres
         cleaned = cleaned[:5]
         
         e.control.value = cleaned
@@ -392,22 +372,20 @@ class CriarTarefa(ft.Container):
         self.page.update()
 
     def update_preview(self, e=None):
-        """Atualiza o preview da tarefa em tempo real"""
+        # Atualiza o preview da tarefa em tempo real
         title = self.title_field.value or "Nova Tarefa"
         description = self.description_field.value or "Descrição da tarefa aparecerá aqui..."
         time = self.time_field.value or "23:59"
 
-        # Mostrar conteúdo completo sem truncar
         preview_content = self.preview_card.content.controls[2].controls
         preview_content[0].value = f"Título: {title}"
         preview_content[2].value = f"Descrição: {description}"
         preview_content[4].value = f"Prazo: {self.selected_date.strftime('%d/%m/%Y')} às {time}"
 
-        # Atualizar a página para refletir mudanças em tempo real
         self.page.update()
 
     def create_task(self, e):
-        """Cria a tarefa"""
+        # Processa a criação da tarefa
         if self.is_loading:
             return
 
@@ -415,7 +393,6 @@ class CriarTarefa(ft.Container):
         description = self.description_field.value.strip()
         time = self.time_field.value.strip()
 
-        # Validações
         if not title:
             self.controller.show_snackbar("Título é obrigatório!", "error")
             return
@@ -424,31 +401,25 @@ class CriarTarefa(ft.Container):
             self.controller.show_snackbar("Descrição é obrigatória!", "error")
             return
 
-        # Validar formato do horário
         import re
         if not re.match(r'^\d{2}:\d{2}$', time):
             self.controller.show_snackbar("Horário deve estar no formato HH:MM!", "error")
             return
 
         try:
-            # Validar horário
             hour, minute = map(int, time.split(':'))
             if hour > 23 or minute > 59:
                 self.controller.show_snackbar("Horário inválido!", "error")
                 return
 
-            # Criar datetime completo
             expiration_datetime = self.selected_date.replace(hour=hour, minute=minute, second=0, microsecond=0)
             
-            # Verificar se a data não é no passado
             if expiration_datetime <= datetime.now():
                 self.controller.show_snackbar("A data de entrega deve ser futura!", "error")
                 return
 
-            # Iniciar loading
             self.start_loading()
 
-            # Inserir tarefa
             user_id = self.controller.current_user['id']
             expiration_str = expiration_datetime.strftime('%d/%m/%Y %H:%M')
             
@@ -466,19 +437,19 @@ class CriarTarefa(ft.Container):
             self.stop_loading()
 
     def start_loading(self):
-        """Inicia loading"""
+        # Inicia o estado de carregamento
         self.is_loading = True
         self.loading_indicator.visible = True
         self.create_button.bgcolor = ft.colors.with_opacity(0.7, ft.colors.PINK_500)
         self.page.update()
 
     def stop_loading(self):
-        """Para loading"""
+        # Para o estado de carregamento
         self.is_loading = False
         self.loading_indicator.visible = False
         self.create_button.bgcolor = ft.colors.PINK_500
         self.page.update()
 
     def go_back(self, e):
-        """Volta para o dashboard"""
+        # Retorna para o dashboard do professor
         self.controller.show_page("DashboardProfessor")

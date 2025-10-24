@@ -4,10 +4,9 @@ from backend.database import insert_student_response, get_user_id, get_student_r
 import os
 
 class DetalheTarefaAluno(ft.Container):
-    """Classe responsável pela tela de detalhes da tarefa do aluno com design clean."""
 
     def __init__(self, page: ft.Page, controller):
-        """Inicializa a tela de detalhes da tarefa do aluno."""
+        # Inicializa a tela de detalhes da tarefa do aluno
         super().__init__(
             expand=True,
             width=None,
@@ -18,11 +17,9 @@ class DetalheTarefaAluno(ft.Container):
         self.page = page
         self.controller = controller
 
-        # File picker
         self.file_picker = ft.FilePicker(on_result=self.on_file_selected)
         self.page.overlay.append(self.file_picker)
 
-        # File preview dialog
         self.file_preview_dialog = ft.AlertDialog(
             modal=True,
             title=ft.Text("Visualização do Arquivo", size=24, weight=ft.FontWeight.W_600, color=ft.colors.GREY_800),
@@ -39,7 +36,6 @@ class DetalheTarefaAluno(ft.Container):
             actions_alignment=ft.MainAxisAlignment.END,
         )
 
-        # Variáveis para arquivo selecionado
         self.selected_file_path = None
         self.selected_file_name = None
 
@@ -47,9 +43,8 @@ class DetalheTarefaAluno(ft.Container):
         self.setup_layout()
 
     def create_components(self):
-        """Cria todos os componentes da interface"""
+        # Cria os componentes principais da interface
         
-        # Botão voltar clean - MAIOR
         self.back_button = ft.Container(
             content=ft.Row([
                 ft.Icon(ft.icons.ARROW_BACK_ROUNDED, color=ft.colors.PINK_500, size=24),
@@ -70,7 +65,6 @@ class DetalheTarefaAluno(ft.Container):
             on_click=self.go_back
         )
 
-        # Container para detalhes da tarefa - MAIOR
         self.task_details_container = ft.Container(
             bgcolor=ft.colors.WHITE,
             border_radius=25,
@@ -84,7 +78,6 @@ class DetalheTarefaAluno(ft.Container):
             border=ft.border.all(1, ft.colors.with_opacity(0.05, ft.colors.BLACK))
         )
 
-        # Container para controles de upload - MAIOR
         self.upload_container = ft.Container(
             bgcolor=ft.colors.WHITE,
             border_radius=25,
@@ -99,9 +92,8 @@ class DetalheTarefaAluno(ft.Container):
         )
 
     def setup_layout(self):
-        """Configura o layout da página"""
+        # Organiza o layout principal da página
         
-        # Header clean - MAIOR
         header = ft.Container(
             content=ft.Row([
                 self.back_button,
@@ -126,7 +118,6 @@ class DetalheTarefaAluno(ft.Container):
             padding=ft.padding.symmetric(horizontal=60, vertical=45)
         )
 
-        # Seção de detalhes da tarefa - MAIOR
         task_section = ft.Container(
             content=ft.Column([
                 self.task_details_container
@@ -134,7 +125,6 @@ class DetalheTarefaAluno(ft.Container):
             padding=ft.padding.symmetric(horizontal=60, vertical=25)
         )
 
-        # Seção de upload - MAIOR
         upload_section = ft.Container(
             content=ft.Column([
                 self.upload_container
@@ -142,7 +132,6 @@ class DetalheTarefaAluno(ft.Container):
             padding=ft.padding.symmetric(horizontal=60, vertical=25)
         )
 
-        # Layout principal com fundo branco clean
         self.content = ft.Container(
             expand=True,
             width=None,
@@ -162,15 +151,13 @@ class DetalheTarefaAluno(ft.Container):
             )
         )
 
-        # Carregar detalhes inicialmente
         self.refresh()
 
     def refresh(self):
-        """Atualiza os detalhes da tarefa e controles de upload."""
+        # Atualiza os detalhes da tarefa e controles de upload
         if self.controller.current_task:
             task = self.controller.current_task
             
-            # Detalhes da tarefa - MAIORES
             creation_date = datetime.strptime(task[3], '%Y-%m-%d %H:%M:%S')
             exp_date = datetime.strptime(task[4], '%Y-%m-%d %H:%M:%S')
             is_expired = datetime.now() > exp_date
@@ -267,14 +254,12 @@ class DetalheTarefaAluno(ft.Container):
             self.task_details_container.content = task_info
             self.task_details_container.width = 1000
 
-            # Verificar se o aluno já enviou resposta
             task_id = task[0]
             user_ra = self.controller.current_user['ra']
             user_id = get_user_id(user_ra)
             response = get_student_response(task_id, user_id) if user_id else None
 
             if response:
-                # Tarefa já entregue
                 filename, file_data, *_ = response
                 self.file_data = file_data
                 
@@ -327,7 +312,6 @@ class DetalheTarefaAluno(ft.Container):
                 ], horizontal_alignment=ft.CrossAxisAlignment.CENTER)
                 
             elif datetime.now() <= exp_date:
-                # Tarefa ativa - mostrar controles de upload
                 self.selected_file_label = ft.Text(
                     "Nenhum arquivo selecionado",
                     size=18,
@@ -404,7 +388,6 @@ class DetalheTarefaAluno(ft.Container):
                 ], horizontal_alignment=ft.CrossAxisAlignment.CENTER)
                 
             else:
-                # Tarefa expirada
                 upload_content = ft.Column([
                     ft.Row([
                         ft.Container(
@@ -436,7 +419,6 @@ class DetalheTarefaAluno(ft.Container):
             self.upload_container.width = 1000
 
         else:
-            # Caso não haja tarefa selecionada
             self.task_details_container.content = ft.Text(
                 "Nenhuma tarefa selecionada",
                 size=24,
@@ -444,21 +426,20 @@ class DetalheTarefaAluno(ft.Container):
             )
             self.upload_container.content = ft.Container()
 
-        # Resetar arquivo selecionado
         self.selected_file_path = None
         self.selected_file_name = None
 
         self.page.update()
 
     def select_file(self, e):
-        """Abre o seletor de arquivos para escolher um arquivo para upload."""
+        # Abre o seletor de arquivos
         self.file_picker.pick_files(
             allow_multiple=False,
             allowed_extensions=["png", "jpg", "jpeg", "pdf"]
         )
 
     def on_file_selected(self, e: ft.FilePickerResultEvent):
-        """Manipula o resultado da seleção de arquivo."""
+        # Processa o arquivo selecionado pelo usuário
         if e.files:
             file = e.files[0]
             self.selected_file_path = file.path
@@ -473,7 +454,7 @@ class DetalheTarefaAluno(ft.Container):
         self.page.update()
 
     def send_response(self, e):
-        """Envia a resposta do aluno para a tarefa."""
+        # Envia a resposta do aluno para a tarefa
         if not self.controller.current_task:
             self.controller.show_snackbar("Nenhuma tarefa selecionada!", "error")
             return
@@ -491,9 +472,8 @@ class DetalheTarefaAluno(ft.Container):
 
         filename = self.selected_file_name
 
-        # Verificar tamanho do arquivo (limite de 10MB)
         file_size = os.path.getsize(self.selected_file_path)
-        max_size = 10 * 1024 * 1024  # 10MB
+        max_size = 10 * 1024 * 1024
         if file_size > max_size:
             self.controller.show_snackbar("Arquivo muito grande. Limite de 10MB.", "error")
             return
@@ -515,11 +495,12 @@ class DetalheTarefaAluno(ft.Container):
             self.controller.show_snackbar("Resposta enviada com sucesso!", "success")
             self.selected_file_path = None
             self.selected_file_name = None
-            self.refresh()  # Recarregar para mostrar status entregue
+            self.refresh()
         else:
             self.controller.show_snackbar("Falha ao enviar resposta.", "error")
 
     def show_file_preview(self, e):
+        # Exibe a pré-visualização do arquivo enviado
         if not hasattr(self, 'file_data') or not self.file_data:
             self.controller.show_snackbar("Nenhum arquivo para visualizar.", "error")
             return
@@ -537,7 +518,6 @@ class DetalheTarefaAluno(ft.Container):
             content = None
 
             if file_ext in ['png', 'jpg', 'jpeg']:
-                # Mostrar imagem
                 content = ft.Image(
                     src_base64=base64.b64encode(self.file_data).decode('utf-8'),
                     width=600,
@@ -545,7 +525,6 @@ class DetalheTarefaAluno(ft.Container):
                     fit=ft.ImageFit.CONTAIN
                 )
             elif file_ext == 'pdf':
-                # Mostrar mensagem para PDF
                 content = ft.Column([
                     ft.Icon(ft.icons.PICTURE_AS_PDF, size=64, color=ft.colors.RED_600),
                     ft.Container(height=20),
@@ -575,10 +554,10 @@ class DetalheTarefaAluno(ft.Container):
             self.page.open(self.file_preview_dialog)
 
     def close_file_preview(self, e):
-        """Fecha o diálogo de pré-visualização do arquivo."""
+        # Fecha o diálogo de pré-visualização
         self.file_preview_dialog.open = False
         self.page.update()
 
     def go_back(self, e):
-        """Volta para Ver Tarefas Aluno"""
+        # Retorna para a tela de visualização de tarefas
         self.controller.show_page("VerTarefasAluno")

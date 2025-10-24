@@ -3,10 +3,9 @@ from datetime import datetime, timedelta
 from backend.database import update_task
 
 class EditarTarefa(ft.Container):
-    """Classe responsável pela tela de editar tarefa do professor com design clean."""
 
     def __init__(self, page: ft.Page, controller):
-        """Inicializa a tela de editar tarefa."""
+        # Inicializa a tela de editar tarefa
         super().__init__(
             expand=True,
             width=None,
@@ -21,9 +20,8 @@ class EditarTarefa(ft.Container):
         self.setup_layout()
 
     def create_components(self):
-        """Cria todos os componentes da interface"""
+        # Cria todos os componentes da interface
         
-        # Botão voltar clean - MAIOR
         self.back_button = ft.Container(
             content=ft.Row([
                 ft.Icon(ft.icons.ARROW_BACK_ROUNDED, color=ft.colors.PINK_500, size=24),
@@ -44,7 +42,6 @@ class EditarTarefa(ft.Container):
             on_click=self.go_back
         )
 
-        # Campos do formulário clean - MAIORES
         self.title_field = ft.TextField(
             label="Título da Tarefa",
             width=700,
@@ -100,7 +97,6 @@ class EditarTarefa(ft.Container):
             content_padding=ft.padding.symmetric(horizontal=25, vertical=25)
         )
 
-        # Data e hora de expiração
         self.selected_date = datetime.now().date()
         
         self.date_picker = ft.DatePicker(
@@ -166,7 +162,6 @@ class EditarTarefa(ft.Container):
             on_change=self.validate_time
         )
 
-        # Botão salvar alterações clean - MAIOR
         self.save_button = ft.Container(
             content=ft.Text(
                 "Salvar Alterações",
@@ -189,9 +184,8 @@ class EditarTarefa(ft.Container):
         )
 
     def setup_layout(self):
-        """Configura o layout da página"""
+        # Configura o layout da página
         
-        # Header clean - MAIOR
         header = ft.Container(
             content=ft.Row([
                 self.back_button,
@@ -216,7 +210,6 @@ class EditarTarefa(ft.Container):
             padding=ft.padding.symmetric(horizontal=60, vertical=45)
         )
 
-        # Card principal do formulário clean - MAIOR
         form_card = ft.Container(
             content=ft.Column([
                 ft.Container(
@@ -281,7 +274,6 @@ class EditarTarefa(ft.Container):
             border=ft.border.all(1, ft.colors.with_opacity(0.05, ft.colors.BLACK))
         )
 
-        # Layout principal com fundo branco clean
         self.content = ft.Container(
             expand=True,
             width=None,
@@ -303,19 +295,16 @@ class EditarTarefa(ft.Container):
             )
         )
 
-        # Carregar dados da tarefa atual
         self.load_task_data()
 
     def load_task_data(self):
-        """Carrega os dados da tarefa atual nos campos."""
+        # Carrega os dados da tarefa atual nos campos
         if self.controller.current_task:
             task = self.controller.current_task
             
-            # Preencher campos
-            self.title_field.value = task[1]  # título
-            self.description_field.value = task[2] or ""  # descrição
+            self.title_field.value = task[1]
+            self.description_field.value = task[2] or ""
             
-            # Processar data de expiração
             try:
                 exp_date = datetime.strptime(task[4], '%Y-%m-%d %H:%M:%S')
                 self.selected_date = exp_date.date()
@@ -323,7 +312,6 @@ class EditarTarefa(ft.Container):
                 self.date_button.content.controls[1].value = self.selected_date.strftime('%d/%m/%Y')
                 self.time_field.value = exp_date.strftime('%H:%M')
             except ValueError:
-                # Usar valores padrão se houver erro na conversão
                 tomorrow = datetime.now() + timedelta(days=1)
                 self.selected_date = tomorrow.date()
                 self.date_picker.value = self.selected_date
@@ -331,30 +319,27 @@ class EditarTarefa(ft.Container):
                 self.time_field.value = "23:59"
 
     def on_date_change(self, e):
-        """Atualiza o texto do botão quando a data é alterada."""
+        # Atualiza o texto do botão quando a data é alterada
         if self.date_picker.value:
             self.selected_date = self.date_picker.value
             self.date_button.content.controls[1].value = self.selected_date.strftime('%d/%m/%Y')
             self.page.update()
 
     def validate_time(self, e):
-        """Valida o formato do horário em tempo real."""
+        # Valida o formato do horário em tempo real
         value = e.control.value
-        # Remove caracteres não numéricos exceto ':'
         cleaned = ''.join(c for c in value if c.isdigit() or c == ':')
         
-        # Formata automaticamente HH:MM
         if len(cleaned) > 2 and ':' not in cleaned:
             cleaned = cleaned[:2] + ':' + cleaned[2:]
         
-        # Limitar a 5 caracteres
         cleaned = cleaned[:5]
         
         self.time_field.value = cleaned
         self.page.update()
 
     def save_task(self, e):
-        """Salva as alterações da tarefa."""
+        # Salva as alterações da tarefa
         if not self.controller.current_task:
             self.controller.show_snackbar("Erro: nenhuma tarefa selecionada!", "error")
             return
@@ -364,7 +349,6 @@ class EditarTarefa(ft.Container):
         description = self.description_field.value.strip()
         time_str = self.time_field.value.strip()
 
-        # Validações
         if not title:
             self.controller.show_snackbar("O título da tarefa é obrigatório!", "error")
             return
@@ -373,7 +357,6 @@ class EditarTarefa(ft.Container):
             self.controller.show_snackbar("A descrição da tarefa é obrigatória!", "error")
             return
 
-        # Validar formato do horário
         try:
             time_parts = time_str.split(':')
             if len(time_parts) != 2:
@@ -386,33 +369,28 @@ class EditarTarefa(ft.Container):
             self.controller.show_snackbar("Formato de horário inválido! Use HH:MM (ex: 14:30)", "error")
             return
 
-        # Criar datetime de expiração
         exp_datetime = datetime.combine(self.selected_date, datetime.strptime(time_str, '%H:%M').time())
 
-        # Verificar se a data não é no passado
         if exp_datetime <= datetime.now():
             self.controller.show_snackbar("A data de expiração deve ser no futuro!", "error")
             return
 
-        # Atualizar no banco de dados
         if update_task(task_id, title, description, exp_datetime):
-            # Atualizar a tarefa atual no controller
             updated_task = list(self.controller.current_task)
             updated_task[1] = title
             updated_task[2] = description
             updated_task[4] = exp_datetime.strftime('%Y-%m-%d %H:%M:%S')
             self.controller.current_task = tuple(updated_task)
             
-            # Mostrar sucesso e voltar
             self.controller.show_snackbar("Tarefa editada com sucesso!", "success")
             self.controller.show_page("DetalheTarefa")
         else:
             self.controller.show_snackbar("Erro ao editar tarefa. Tente novamente.", "error")
 
     def open_date_picker(self, e):
-        """Abre o seletor de data para escolher a data de expiração."""
+        # Abre o seletor de data para escolher a data de expiração
         self.date_picker.pick_date()
 
     def go_back(self, e):
-        """Volta para os detalhes da tarefa."""
+        # Retorna para os detalhes da tarefa
         self.controller.show_page("DetalheTarefa")

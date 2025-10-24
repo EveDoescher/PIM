@@ -2,10 +2,9 @@ import flet as ft
 from backend.statistics_wrapper import get_statistics_wrapper
 
 class DashboardAluno(ft.Container):
-    """Dashboard do aluno com design clean, moderno e fluido."""
 
     def __init__(self, page: ft.Page, controller):
-        """Inicializa o dashboard com interface moderna."""
+        # Inicializa o dashboard do aluno com interface moderna
         super().__init__(
             expand=True,
             width=None,
@@ -16,33 +15,28 @@ class DashboardAluno(ft.Container):
         self.page = page
         self.controller = controller
         
-        # Obter wrapper de estatísticas
         self.stats_wrapper = get_statistics_wrapper()
 
         self.create_components()
         self.setup_layout()
 
     def get_real_statistics(self):
-        """Obtém estatísticas reais do banco de dados via funções C"""
+        # Obtém estatísticas reais do banco de dados
         if not self.controller.current_user:
             return {"pendentes": "0", "concluidas": "0", "media": "0.0"}
         
         student_id = self.controller.current_user['id']
         
-        # Obter estatísticas em tempo real
         stats = {"pendentes": "0", "concluidas": "0", "media": "0.0"}
         
         try:
             if self.stats_wrapper and self.stats_wrapper.lib:
-                # Total de tarefas pendentes do aluno
                 pendentes = self.stats_wrapper.get_student_pending_tasks(student_id)
                 stats["pendentes"] = str(pendentes)
                 
-                # Total de tarefas concluídas do aluno
                 concluidas = self.stats_wrapper.get_student_completed_tasks(student_id)
                 stats["concluidas"] = str(concluidas)
                 
-                # Média de notas do aluno
                 media = self.stats_wrapper.get_student_average_grade(student_id)
                 stats["media"] = f"{media:.1f}"
         except:
@@ -51,12 +45,10 @@ class DashboardAluno(ft.Container):
         return stats
 
     def update_statistics(self):
-        """Atualiza as estatísticas em tempo real"""
+        # Atualiza as estatísticas em tempo real na interface
         real_stats = self.get_real_statistics()
         
-        # Atualizar os valores nos cards de estatísticas
         if hasattr(self, 'stats_row') and self.stats_row.controls:
-            # Card de tarefas pendentes
             if len(self.stats_row.controls) > 0:
                 card = self.stats_row.controls[0]
                 if hasattr(card, 'content') and hasattr(card.content, 'controls'):
@@ -66,7 +58,6 @@ class DashboardAluno(ft.Container):
                         if hasattr(column, 'controls') and len(column.controls) > 0:
                             column.controls[0].value = real_stats["pendentes"]
             
-            # Card de tarefas concluídas
             if len(self.stats_row.controls) > 1:
                 card = self.stats_row.controls[1]
                 if hasattr(card, 'content') and hasattr(card.content, 'controls'):
@@ -76,7 +67,6 @@ class DashboardAluno(ft.Container):
                         if hasattr(column, 'controls') and len(column.controls) > 0:
                             column.controls[0].value = real_stats["concluidas"]
             
-            # Card de média
             if len(self.stats_row.controls) > 2:
                 card = self.stats_row.controls[2]
                 if hasattr(card, 'content') and hasattr(card.content, 'controls'):
@@ -86,16 +76,13 @@ class DashboardAluno(ft.Container):
                         if hasattr(column, 'controls') and len(column.controls) > 0:
                             column.controls[0].value = real_stats["media"]
         
-        # Atualizar a página
         self.page.update()
 
     def create_components(self):
-        """Cria todos os componentes da interface"""
+        # Cria todos os componentes visuais do dashboard
         
-        # Nome do usuário
         fullname = self.controller.current_user['full_name'] if self.controller.current_user else "Aluno"
         
-        # Avatar moderno e clean - MAIOR
         self.user_avatar = ft.Container(
             content=ft.Image(
                 src="frontend/assets/personagem_1.png",
@@ -125,7 +112,6 @@ class DashboardAluno(ft.Container):
             border=ft.border.all(4, ft.colors.PINK_100)
         )
 
-        # Botão de logout clean - MAIOR
         self.logout_button = ft.Container(
             content=ft.Row([
                 ft.Icon(ft.icons.LOGOUT_ROUNDED, color=ft.colors.PINK_500, size=24),
@@ -146,7 +132,6 @@ class DashboardAluno(ft.Container):
             on_click=self.logout
         )
 
-        # Cards de ação modernos e clean - MAIORES
         self.view_tasks_card = self.create_action_card(
             title="Minhas Tarefas",
             subtitle="Visualize suas tarefas\npendentes e concluídas",
@@ -163,10 +148,8 @@ class DashboardAluno(ft.Container):
             action=self.go_to_ver_notas
         )
 
-        # Obter estatísticas reais
         real_stats = self.get_real_statistics()
 
-        # Estatísticas clean - MAIORES com dados reais
         self.stats_row = ft.Row([
             self.create_stat_card("Tarefas Pendentes", real_stats["pendentes"], ft.icons.PENDING_ACTIONS_ROUNDED, ft.colors.ORANGE_400),
             self.create_stat_card("Concluídas", real_stats["concluidas"], ft.icons.TASK_ALT_ROUNDED, ft.colors.GREEN_400),
@@ -174,10 +157,9 @@ class DashboardAluno(ft.Container):
         ], spacing=40, alignment=ft.MainAxisAlignment.CENTER)
 
     def create_action_card(self, title, subtitle, icon, primary_color, action):
-        """Cria um card de ação moderno e clean - MAIOR"""
+        # Cria cards de ação para navegação rápida
         return ft.Container(
             content=ft.Column([
-                # Ícone com design clean - MAIOR
                 ft.Container(
                     content=ft.Icon(icon, size=55, color=primary_color),
                     width=110,
@@ -196,7 +178,6 @@ class DashboardAluno(ft.Container):
                 
                 ft.Container(height=35),
                 
-                # Título - MAIOR
                 ft.Text(
                     title,
                     size=26,
@@ -207,7 +188,6 @@ class DashboardAluno(ft.Container):
                 
                 ft.Container(height=12),
                 
-                # Subtítulo - MAIOR
                 ft.Text(
                     subtitle,
                     size=18,
@@ -218,7 +198,6 @@ class DashboardAluno(ft.Container):
                 
                 ft.Container(height=35),
                 
-                # Botão de ação clean - MAIOR
                 ft.Container(
                     content=ft.Text(
                         "Acessar",
@@ -259,7 +238,7 @@ class DashboardAluno(ft.Container):
         )
 
     def create_stat_card(self, label, value, icon, color):
-        """Cria um card de estatística clean - MAIOR"""
+        # Cria cards de estatísticas com dados em tempo real
         return ft.Container(
             content=ft.Row([
                 ft.Container(
@@ -302,12 +281,10 @@ class DashboardAluno(ft.Container):
         )
 
     def setup_layout(self):
-        """Configura o layout da página"""
+        # Organiza o layout principal do dashboard
         
-        # Header clean - MAIOR
         header = ft.Container(
             content=ft.Row([
-                # Lado esquerdo - Avatar e saudação
                 ft.Row([
                     self.user_avatar,
                     ft.Container(width=30),
@@ -327,13 +304,11 @@ class DashboardAluno(ft.Container):
                     ], spacing=6)
                 ], alignment=ft.MainAxisAlignment.START),
                 
-                # Lado direito - Controles
                 self.logout_button
             ], alignment=ft.MainAxisAlignment.SPACE_BETWEEN),
             padding=ft.padding.symmetric(horizontal=50, vertical=45)
         )
 
-        # Seção de estatísticas - MAIOR
         stats_section = ft.Container(
             content=ft.Column([
                 ft.Text(
@@ -348,7 +323,6 @@ class DashboardAluno(ft.Container):
             padding=ft.padding.symmetric(horizontal=50, vertical=35)
         )
 
-        # Seção de ações principais - MAIOR
         actions_section = ft.Container(
             content=ft.Column([
                 ft.Text(
@@ -367,7 +341,6 @@ class DashboardAluno(ft.Container):
             padding=ft.padding.symmetric(horizontal=50, vertical=35)
         )
 
-        # Layout principal com fundo branco clean
         self.content = ft.Container(
             expand=True,
             width=None,
@@ -387,19 +360,19 @@ class DashboardAluno(ft.Container):
         )
 
     def did_mount(self):
-        """Chamado quando o componente é montado - atualiza estatísticas"""
+        # Atualiza estatísticas quando o componente é montado
         self.update_statistics()
 
     def logout(self, e):
-        """Executa logout com animação"""
+        # Realiza o logout do usuário
         self.controller.current_user = None
         self.controller.show_snackbar("Logout realizado com sucesso!", "success")
         self.controller.show_page("Login")
 
     def go_to_ver_tarefas(self, e):
-        """Navega para ver tarefas do aluno"""
+        # Navega para a tela de visualização de tarefas
         self.controller.show_page("VerTarefasAluno")
 
     def go_to_ver_notas(self, e):
-        """Navega para ver notas do aluno"""
+        # Navega para a tela de visualização de notas
         self.controller.show_page("VerNotasAluno")

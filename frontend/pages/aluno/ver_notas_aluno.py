@@ -3,10 +3,9 @@ from backend.database import get_all_tasks, get_user_id, get_student_response
 from datetime import datetime
 
 class VerNotasAluno(ft.Container):
-    """Classe responsável pela tela de visualização de notas do aluno com design clean."""
 
     def __init__(self, page: ft.Page, controller):
-        """Inicializa a tela de ver notas do aluno."""
+        # Inicializa a tela de visualização de notas do aluno
         super().__init__(
             expand=True,
             width=None,
@@ -21,9 +20,8 @@ class VerNotasAluno(ft.Container):
         self.setup_layout()
 
     def create_components(self):
-        """Cria todos os componentes da interface"""
+        # Cria os componentes principais da interface
         
-        # Botão voltar clean - MAIOR
         self.back_button = ft.Container(
             content=ft.Row([
                 ft.Icon(ft.icons.ARROW_BACK_ROUNDED, color=ft.colors.PINK_500, size=24),
@@ -44,7 +42,6 @@ class VerNotasAluno(ft.Container):
             on_click=self.go_back
         )
 
-        # Container para a lista de tarefas - CENTRALIZADAS
         self.tasks_container = ft.Column(
             scroll=ft.ScrollMode.AUTO,
             spacing=20,
@@ -52,9 +49,8 @@ class VerNotasAluno(ft.Container):
         )
 
     def setup_layout(self):
-        """Configura o layout da página"""
+        # Organiza o layout principal da página
         
-        # Header clean - MAIOR
         header = ft.Container(
             content=ft.Row([
                 self.back_button,
@@ -79,7 +75,6 @@ class VerNotasAluno(ft.Container):
             padding=ft.padding.symmetric(horizontal=60, vertical=45)
         )
 
-        # Lista de notas - CENTRALIZADA
         notes_section = ft.Container(
             content=ft.Column([
                 ft.Container(
@@ -101,7 +96,6 @@ class VerNotasAluno(ft.Container):
             padding=ft.padding.symmetric(horizontal=60, vertical=25)
         )
 
-        # Layout principal com fundo branco clean
         self.content = ft.Container(
             expand=True,
             width=None,
@@ -120,11 +114,10 @@ class VerNotasAluno(ft.Container):
             )
         )
 
-        # Carregar tarefas inicialmente
         self.refresh()
 
     def refresh(self):
-        """Atualiza a lista de tarefas com status de entrega"""
+        # Atualiza a lista de tarefas com notas e avaliações
         tasks = get_all_tasks()
         self.tasks_container.controls.clear()
 
@@ -158,7 +151,6 @@ class VerNotasAluno(ft.Container):
         else:
             user_ra = self.controller.current_user['ra']
             user_id = get_user_id(user_ra)
-            # Ordenar tarefas por data de criação (mais nova primeiro)
             tasks.sort(key=lambda x: datetime.strptime(x[3], '%Y-%m-%d %H:%M:%S'), reverse=True)
             for task in tasks:
                 task_id = task[0]
@@ -166,7 +158,6 @@ class VerNotasAluno(ft.Container):
                 exp_date = datetime.strptime(task[4], '%Y-%m-%d %H:%M:%S')
                 expired = datetime.now() > exp_date
 
-                # Determinar status e cor
                 if response:
                     rating = response[3]
                     comment = response[4]
@@ -191,7 +182,6 @@ class VerNotasAluno(ft.Container):
                         status_icon = ft.icons.SCHEDULE_ROUNDED
                     display_rating = False
 
-                # Conteúdo do card - MAIOR
                 card_content = [
                     ft.Row([
                         ft.Container(
@@ -280,5 +270,5 @@ class VerNotasAluno(ft.Container):
         self.page.update()
 
     def go_back(self, e):
-        """Volta para o dashboard do aluno."""
+        # Retorna para o dashboard do aluno
         self.controller.show_page("DashboardAluno")

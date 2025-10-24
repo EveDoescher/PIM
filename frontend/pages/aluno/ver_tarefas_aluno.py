@@ -3,10 +3,9 @@ from datetime import datetime
 from backend.database import get_all_tasks, get_student_response
 
 class VerTarefasAluno(ft.Container):
-    """Classe responsável pela visualização de tarefas do aluno com design clean e moderno."""
 
     def __init__(self, page: ft.Page, controller):
-        """Inicializa a tela de visualização de tarefas."""
+        # Inicializa a tela de visualização de tarefas do aluno
         super().__init__(
             expand=True,
             width=None,
@@ -20,32 +19,29 @@ class VerTarefasAluno(ft.Container):
         self.tasks = []
         self.filtered_tasks = []
         self.search_query = ""
-        self.filter_status = "todas"  # todas, pendentes, entregues, expiradas
+        self.filter_status = "todas"
         
         self.load_tasks()
         self.create_components()
         self.setup_layout()
 
     def load_tasks(self):
-        """Carrega todas as tarefas disponíveis"""
+        # Carrega todas as tarefas e adiciona status de entrega
         all_tasks = get_all_tasks() or []
         user_id = self.controller.current_user.get('id') if self.controller.current_user else None
 
-        # Adicionar status de entrega para cada tarefa
         self.tasks = []
         for task in all_tasks:
             task_data = list(task)
-            # Verificar se o aluno já entregou
             response = get_student_response(task[0], user_id) if user_id else None
-            task_data.append(response)  # Adicionar resposta como último elemento
+            task_data.append(response)
             self.tasks.append(tuple(task_data))
 
         self.filtered_tasks = self.tasks.copy()
 
     def create_components(self):
-        """Cria todos os componentes da interface"""
+        # Cria todos os componentes da interface
         
-        # Botão voltar clean - MAIOR
         self.back_button = ft.Container(
             content=ft.Row([
                 ft.Icon(ft.icons.ARROW_BACK_ROUNDED, color=ft.colors.PINK_500, size=24),
@@ -66,7 +62,6 @@ class VerTarefasAluno(ft.Container):
             on_click=self.go_back
         )
 
-        # Campo de busca clean - MAIOR
         self.search_field = ft.TextField(
             label="Buscar tarefas...",
             width=500,
@@ -93,7 +88,6 @@ class VerTarefasAluno(ft.Container):
             on_change=self.on_search_change
         )
 
-        # Filtros clean - MAIORES
         self.filter_chips = ft.Row([
             self.create_filter_chip("todas", "Todas", ft.icons.LIST_ROUNDED),
             self.create_filter_chip("pendentes", "Pendentes", ft.icons.PENDING_ACTIONS_ROUNDED),
@@ -101,18 +95,16 @@ class VerTarefasAluno(ft.Container):
             self.create_filter_chip("expiradas", "Expiradas", ft.icons.SCHEDULE_SEND_ROUNDED)
         ], spacing=15)
 
-        # Container para lista de tarefas - CENTRALIZADAS
         self.tasks_container = ft.Column(
             spacing=20,
             horizontal_alignment=ft.CrossAxisAlignment.CENTER
         )
         self.update_tasks_display()
 
-        # Estatísticas clean - MAIORES
         self.stats_row = self.create_stats()
 
     def create_filter_chip(self, value, label, icon):
-        """Cria um chip de filtro clean - MAIOR"""
+        # Cria chips de filtro para categorizar tarefas
         is_selected = self.filter_status == value
         
         return ft.Container(
@@ -141,9 +133,9 @@ class VerTarefasAluno(ft.Container):
         )
 
     def get_task_status(self, task):
-        """Determina o status da tarefa para o aluno"""
+        # Determina o status atual da tarefa para o aluno
         expiration_date = datetime.strptime(task[4], '%Y-%m-%d %H:%M:%S')
-        has_response = task[6] is not None  # Resposta do aluno
+        has_response = task[6] is not None
         
         if expiration_date < datetime.now():
             return "expirada" if not has_response else "entregue_expirada"
@@ -153,11 +145,10 @@ class VerTarefasAluno(ft.Container):
             return "pendente"
 
     def create_task_card(self, task):
-        """Cria um card moderno e clean para cada tarefa - MAIOR e CENTRALIZADO"""
+        # Cria um card visual para cada tarefa
         status = self.get_task_status(task)
         expiration_date = datetime.strptime(task[4], '%Y-%m-%d %H:%M:%S')
         
-        # Definir cores e textos baseados no status
         status_config = {
             "pendente": {
                 "color": ft.colors.ORANGE_400,
@@ -183,16 +174,13 @@ class VerTarefasAluno(ft.Container):
         
         config = status_config[status]
 
-        # Card da tarefa clean - MAIOR e CENTRALIZADO
         return ft.Container(
             content=ft.Row([
-                # Conteúdo principal
                 ft.Container(
                     content=ft.Column([
-                        # Cabeçalho com título e status
                         ft.Row([
                             ft.Text(
-                                task[1],  # título
+                                task[1],
                                 size=24,
                                 weight=ft.FontWeight.W_600,
                                 color=ft.colors.GREY_800,
@@ -216,7 +204,6 @@ class VerTarefasAluno(ft.Container):
                         
                         ft.Container(height=15),
                         
-                        # Descrição
                         ft.Text(
                             task[2][:120] + "..." if len(task[2]) > 120 else task[2],
                             size=18,
@@ -226,12 +213,11 @@ class VerTarefasAluno(ft.Container):
                         
                         ft.Container(height=18),
                         
-                        # Informações da tarefa
                         ft.Row([
                             ft.Row([
                                 ft.Icon(ft.icons.PERSON_ROUNDED, size=20, color=ft.colors.GREY_500),
                                 ft.Text(
-                                    f"Professor: {task[5]}",  # nome do professor
+                                    f"Professor: {task[5]}",
                                     size=16,
                                     color=ft.colors.GREY_500
                                 )
@@ -250,7 +236,6 @@ class VerTarefasAluno(ft.Container):
                     padding=ft.padding.all(30)
                 ),
                 
-                # Ações clean - MAIORES
                 ft.Container(
                     content=ft.Column([
                         ft.Container(
@@ -272,7 +257,7 @@ class VerTarefasAluno(ft.Container):
                     padding=ft.padding.all(20)
                 )
             ]),
-            width=1000,  # MAIOR
+            width=1000,
             bgcolor=ft.colors.WHITE,
             border_radius=20,
             alignment=ft.alignment.center_left,
@@ -286,7 +271,7 @@ class VerTarefasAluno(ft.Container):
         )
 
     def create_stats(self):
-        """Cria estatísticas das tarefas - MAIORES"""
+        # Cria estatísticas resumidas das tarefas
         total_tasks = len(self.tasks)
         pending_tasks = len([t for t in self.tasks if self.get_task_status(t) == "pendente"])
         completed_tasks = len([t for t in self.tasks if self.get_task_status(t) in ["entregue", "entregue_expirada"]])
@@ -300,7 +285,7 @@ class VerTarefasAluno(ft.Container):
         ], spacing=60, alignment=ft.MainAxisAlignment.CENTER)
 
     def create_stat_card(self, label, value, icon, color):
-        """Cria um card de estatística clean - MAIOR"""
+        # Cria cards individuais de estatísticas
         return ft.Container(
             content=ft.Row([
                 ft.Container(
@@ -343,9 +328,8 @@ class VerTarefasAluno(ft.Container):
         )
 
     def setup_layout(self):
-        """Configura o layout da página"""
+        # Organiza o layout principal da página
         
-        # Header clean - MAIOR
         header = ft.Container(
             content=ft.Row([
                 self.back_button,
@@ -370,13 +354,11 @@ class VerTarefasAluno(ft.Container):
             padding=ft.padding.symmetric(horizontal=60, vertical=45)
         )
 
-        # Seção de estatísticas - MAIOR
         stats_section = ft.Container(
             content=self.stats_row,
             padding=ft.padding.symmetric(horizontal=60, vertical=25)
         )
 
-        # Seção de filtros e busca - MAIOR
         filters_section = ft.Container(
             content=ft.Row([
                 self.search_field,
@@ -386,7 +368,6 @@ class VerTarefasAluno(ft.Container):
             padding=ft.padding.symmetric(horizontal=60, vertical=25)
         )
 
-        # Lista de tarefas - CENTRALIZADA
         tasks_section = ft.Container(
             content=ft.Column([
                 self.tasks_container
@@ -395,7 +376,6 @@ class VerTarefasAluno(ft.Container):
             alignment=ft.alignment.center
         )
 
-        # Layout principal com fundo branco clean
         self.content = ft.Container(
             expand=True,
             width=None,
@@ -416,11 +396,10 @@ class VerTarefasAluno(ft.Container):
         )
 
     def update_tasks_display(self):
-        """Atualiza a exibição das tarefas - CENTRALIZADA"""
+        # Atualiza a exibição das tarefas na interface
         self.tasks_container.controls.clear()
         
         if not self.filtered_tasks:
-            # Mensagem quando não há tarefas - MAIOR
             empty_state = ft.Container(
                 content=ft.Column([
                     ft.Icon(ft.icons.ASSIGNMENT_ROUNDED, size=80, color=ft.colors.GREY_400),
@@ -443,19 +422,17 @@ class VerTarefasAluno(ft.Container):
             )
             self.tasks_container.controls.append(empty_state)
         else:
-            # Adicionar cards das tarefas - CENTRALIZADAS
             for task in self.filtered_tasks:
                 self.tasks_container.controls.append(self.create_task_card(task))
 
     def on_search_change(self, e):
-        """Callback para mudança na busca"""
+        # Processa mudanças no campo de busca
         self.search_query = e.control.value.lower()
         self.apply_filters()
 
     def change_filter(self, filter_value):
-        """Muda o filtro ativo"""
+        # Altera o filtro ativo e atualiza a interface
         self.filter_status = filter_value
-        # Recriar chips com nova seleção
         self.filter_chips.controls = [
             self.create_filter_chip("todas", "Todas", ft.icons.LIST_ROUNDED),
             self.create_filter_chip("pendentes", "Pendentes", ft.icons.PENDING_ACTIONS_ROUNDED),
@@ -466,10 +443,9 @@ class VerTarefasAluno(ft.Container):
         self.page.update()
 
     def apply_filters(self):
-        """Aplica filtros e busca"""
+        # Aplica filtros de status e busca às tarefas
         filtered = self.tasks.copy()
         
-        # Filtro por status
         if self.filter_status == "pendentes":
             filtered = [t for t in filtered if self.get_task_status(t) == "pendente"]
         elif self.filter_status == "entregues":
@@ -477,22 +453,21 @@ class VerTarefasAluno(ft.Container):
         elif self.filter_status == "expiradas":
             filtered = [t for t in filtered if self.get_task_status(t) == "expirada"]
         
-        # Filtro por busca
         if self.search_query:
             filtered = [t for t in filtered if 
-                       self.search_query in t[1].lower() or  # título
-                       self.search_query in t[2].lower() or  # descrição
-                       self.search_query in t[5].lower()]    # nome do professor
+                       self.search_query in t[1].lower() or
+                       self.search_query in t[2].lower() or
+                       self.search_query in t[5].lower()]
         
         self.filtered_tasks = filtered
         self.update_tasks_display()
         self.page.update()
 
     def view_task_details(self, task):
-        """Visualiza detalhes da tarefa"""
+        # Navega para os detalhes de uma tarefa específica
         self.controller.current_task = task
         self.controller.show_page("DetalheTarefaAluno")
 
     def go_back(self, e):
-        """Volta para o dashboard"""
+        # Retorna para o dashboard do aluno
         self.controller.show_page("DashboardAluno")

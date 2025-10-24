@@ -3,10 +3,9 @@ from datetime import datetime
 from backend.database import get_student_response, update_student_response_rating
 
 class DetalheRespostaAluno(ft.Container):
-    """Classe responsável pela tela de detalhes da resposta do aluno com design clean."""
 
     def __init__(self, page: ft.Page, controller):
-        """Inicializa a tela de detalhes da resposta do aluno."""
+        # Inicializa a tela de detalhes da resposta do aluno
         super().__init__(
             expand=True,
             width=None,
@@ -17,7 +16,6 @@ class DetalheRespostaAluno(ft.Container):
         self.page = page
         self.controller = controller
 
-        # File picker e preview
         self.file_picker = ft.FilePicker()
         self.page.overlay.append(self.file_picker)
 
@@ -37,7 +35,6 @@ class DetalheRespostaAluno(ft.Container):
             actions_alignment=ft.MainAxisAlignment.END,
         )
 
-        # Variáveis de estado
         self.selected_rating = None
         self.file_data = None
 
@@ -45,9 +42,8 @@ class DetalheRespostaAluno(ft.Container):
         self.setup_layout()
 
     def create_components(self):
-        """Cria todos os componentes da interface"""
+        # Cria todos os componentes da interface
         
-        # Botão voltar clean - MAIOR
         self.back_button = ft.Container(
             content=ft.Row([
                 ft.Icon(ft.icons.ARROW_BACK_ROUNDED, color=ft.colors.PINK_500, size=24),
@@ -68,7 +64,6 @@ class DetalheRespostaAluno(ft.Container):
             on_click=self.go_back
         )
 
-        # Container para informações do aluno e tarefa - MAIOR
         self.student_info_container = ft.Container(
             bgcolor=ft.colors.WHITE,
             border_radius=25,
@@ -82,7 +77,6 @@ class DetalheRespostaAluno(ft.Container):
             border=ft.border.all(1, ft.colors.with_opacity(0.05, ft.colors.BLACK))
         )
 
-        # Container para avaliação - MAIOR
         self.evaluation_container = ft.Container(
             bgcolor=ft.colors.WHITE,
             border_radius=25,
@@ -96,7 +90,6 @@ class DetalheRespostaAluno(ft.Container):
             border=ft.border.all(1, ft.colors.with_opacity(0.05, ft.colors.BLACK))
         )
 
-        # Botões de nota (0-10) clean - MAIORES
         self.rating_buttons = []
         for i in range(11):
             if i <= 6:
@@ -124,7 +117,6 @@ class DetalheRespostaAluno(ft.Container):
             )
             self.rating_buttons.append(btn)
 
-        # Campo de comentário clean - MAIOR
         self.comment_field = ft.TextField(
             label="Comentário sobre a resposta",
             multiline=True,
@@ -153,7 +145,6 @@ class DetalheRespostaAluno(ft.Container):
             content_padding=ft.padding.symmetric(horizontal=25, vertical=25)
         )
 
-        # Botão submeter avaliação clean - MAIOR
         self.submit_button = ft.Container(
             content=ft.Row([
                 ft.Icon(ft.icons.GRADE_ROUNDED, color=ft.colors.WHITE, size=24),
@@ -179,9 +170,8 @@ class DetalheRespostaAluno(ft.Container):
         )
 
     def setup_layout(self):
-        """Configura o layout da página"""
+        # Configura o layout da página
         
-        # Header clean - MAIOR
         header = ft.Container(
             content=ft.Row([
                 self.back_button,
@@ -206,7 +196,6 @@ class DetalheRespostaAluno(ft.Container):
             padding=ft.padding.symmetric(horizontal=60, vertical=45)
         )
 
-        # Layout principal com fundo branco clean
         self.content = ft.Container(
             expand=True,
             width=None,
@@ -233,22 +222,19 @@ class DetalheRespostaAluno(ft.Container):
             )
         )
 
-        # Carregar dados inicialmente
         self.refresh()
 
     def refresh(self):
-        """Atualiza os dados da tela."""
+        # Atualiza os dados da tela
         if self.controller.current_task and hasattr(self.controller, 'current_student_response'):
             task = self.controller.current_task
             task_id = task[0]
             student_info = self.controller.current_student_response
 
             if student_info:
-                # Estrutura correta: (username, user_id, has_rating, rating, comment, upload_date, filename)
                 username = student_info[0]
                 user_id = student_info[1]
 
-                # Informações do aluno e tarefa - MAIORES
                 student_info_content = ft.Column([
                     ft.Row([
                         ft.Container(
@@ -280,7 +266,6 @@ class DetalheRespostaAluno(ft.Container):
                 if user_id:
                     response = get_student_response(task_id, user_id)
                     if response:
-                        # Estrutura correta: filename, file_data, upload_date, rating, comment
                         filename = response[0]
                         file_data = response[1]
                         upload_date = response[2]
@@ -299,7 +284,6 @@ class DetalheRespostaAluno(ft.Container):
                         self.selected_rating = rating
                         self.comment_field.value = comment or ""
 
-                        # Adicionar informações do arquivo - MAIORES
                         student_info_content.controls.extend([
                             ft.Container(height=25),
                             ft.Row([
@@ -376,7 +360,6 @@ class DetalheRespostaAluno(ft.Container):
                 self.student_info_container.content = student_info_content
                 self.student_info_container.width = 1200
 
-                # Container de avaliação clean - MAIOR
                 evaluation_content = ft.Column([
                     ft.Text(
                         "Avaliação da Resposta",
@@ -408,17 +391,15 @@ class DetalheRespostaAluno(ft.Container):
                 self.evaluation_container.content = evaluation_content
                 self.evaluation_container.width = 1200
 
-                # Atualizar botões de nota
                 self.update_rating_buttons()
 
         self.page.update()
 
     def update_rating_buttons(self):
-        """Atualiza a aparência dos botões de nota."""
+        # Atualiza a aparência dos botões de nota
         for i, btn in enumerate(self.rating_buttons):
             rating_value = i
             if self.selected_rating is not None and rating_value == self.selected_rating:
-                # Botão selecionado
                 if rating_value <= 6:
                     btn.bgcolor = ft.colors.RED_400
                 elif rating_value <= 8:
@@ -427,7 +408,6 @@ class DetalheRespostaAluno(ft.Container):
                     btn.bgcolor = ft.colors.GREEN_400
                 btn.content.color = ft.colors.WHITE
             else:
-                # Botão não selecionado
                 btn.bgcolor = ft.colors.WHITE
                 if rating_value <= 6:
                     btn.content.color = ft.colors.RED_400
@@ -437,21 +417,20 @@ class DetalheRespostaAluno(ft.Container):
                     btn.content.color = ft.colors.GREEN_400
 
     def on_rating_click(self, e):
-        """Manipula o clique em um botão de nota."""
+        # Processa clique em botão de nota
         clicked_button = e.control
         self.selected_rating = int(clicked_button.content.value)
         self.update_rating_buttons()
         self.page.update()
 
     def show_file_preview(self, e):
-        """Exibe a pré-visualização do arquivo."""
+        # Exibe pré-visualização do arquivo
         if not self.file_data:
             self.controller.show_snackbar("Nenhum arquivo para visualizar.", "error")
             return
 
         import base64
 
-        # Obter informações do arquivo
         task = self.controller.current_task
         student_info = self.controller.current_student_response
         user_id = student_info[1]
@@ -508,14 +487,13 @@ class DetalheRespostaAluno(ft.Container):
             self.page.update()
 
     def close_file_preview(self, e):
-        """Fecha o diálogo de pré-visualização."""
+        # Fecha o diálogo de pré-visualização
         self.file_preview_dialog.open = False
         self.page.update()
 
     def download_file(self, e):
-        """Baixa o arquivo da resposta."""
+        # Processa download do arquivo
         if self.file_data:
-            # Obter nome do arquivo
             task = self.controller.current_task
             student_info = self.controller.current_student_response
             user_id = student_info[1]
@@ -541,7 +519,7 @@ class DetalheRespostaAluno(ft.Container):
             self.controller.show_snackbar("Nenhum arquivo para baixar.", "error")
 
     def submit_rating(self, e):
-        """Submete a avaliação da resposta."""
+        # Submete a avaliação da resposta
         if self.selected_rating is None:
             self.controller.show_snackbar("Selecione uma nota antes de lançar.", "error")
             return
@@ -560,5 +538,5 @@ class DetalheRespostaAluno(ft.Container):
             self.controller.show_snackbar("Erro ao lançar nota.", "error")
 
     def go_back(self, e):
-        """Volta para a tela de detalhes da tarefa."""
+        # Retorna para a tela de detalhes da tarefa
         self.controller.show_page("DetalheTarefa")

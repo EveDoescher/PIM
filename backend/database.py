@@ -1,114 +1,118 @@
-"""
-Módulo de banco de dados para o Sistema Acadêmico Colaborativo
-Gerencia conexões, modelos e operações do banco de dados
-"""
+# Importações necessárias para o banco de dados
 import os
-from datetime import datetime
-import pytz
+from datetime import datetime  # Para trabalhar com datas e horários
+import pytz  # Para trabalhar com fusos horários
 from sqlalchemy import create_engine, Column, Integer, String, Text, DateTime, ForeignKey, LargeBinary
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker, relationship
-from .config import Config
+from sqlalchemy.ext.declarative import declarative_base  # Base para modelos ORM
+from sqlalchemy.orm import sessionmaker, relationship  # Para sessões e relacionamentos
+from .config import Config  # Importa as configurações do sistema
 
-# Definir timezone de Brasília
+# Define o fuso horário de Brasília para timestamps corretos
 BRASILIA_TZ = pytz.timezone('America/Sao_Paulo')
 
-# Base para os modelos
+# Cria a classe base para todos os modelos do banco de dados
 Base = declarative_base()
 
-# Configuração do banco de dados
+# Cria o engine de conexão com o banco usando as configurações
 engine = create_engine(Config.DATABASE_URL, echo=Config.DEBUG)
+
+# Cria a fábrica de sessões para interagir com o banco
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 class User(Base):
-    """Modelo de usuário"""
-    __tablename__ = "users"
+    """Modelo que representa os usuários do sistema (professores e alunos)"""
+    __tablename__ = "users"  # Nome da tabela no banco
     
-    id = Column(Integer, primary_key=True, index=True)
-    username = Column(String(50), unique=True, index=True, nullable=False)  # RA
-    password = Column(String(255), nullable=False)
-    full_name = Column(String(100), nullable=False)
-    user_type = Column(String(20), nullable=False)  # 'professor' ou 'aluno'
-    created_at = Column(DateTime, default=lambda: datetime.now(BRASILIA_TZ))
+    # Definição das colunas da tabela
+    id = Column(Integer, primary_key=True, index=True)  # Chave primária auto-incremento
+    username = Column(String(50), unique=True, index=True, nullable=False)  # RA único
+    password = Column(String(255), nullable=False)  # Senha do usuário
+    full_name = Column(String(100), nullable=False)  # Nome completo
+    user_type = Column(String(20), nullable=False)  # Tipo: 'professor' ou 'aluno'
+    created_at = Column(DateTime, default=lambda: datetime.now(BRASILIA_TZ))  # Data de criação
 
-    # Relacionamentos
+    # Relacionamentos com outras tabelas
     tasks_created = relationship("Task", back_populates="creator", foreign_keys="Task.creator_id")
     responses = relationship("TaskResponse", back_populates="student")
 
 class Task(Base):
-    """Modelo de tarefa"""
-    __tablename__ = "tasks"
+    """Modelo que representa as tarefas criadas pelos professores"""
+    __tablename__ = "tasks"  # Nome da tabela no banco
     
-    id = Column(Integer, primary_key=True, index=True)
-    title = Column(String(200), nullable=False)
-    description = Column(Text, nullable=False)
-    creator_id = Column(Integer, ForeignKey("users.id"), nullable=False)
-    created_at = Column(DateTime, default=lambda: datetime.now(BRASILIA_TZ))
-    due_date = Column(DateTime, nullable=True)
-    max_score = Column(Integer, default=100)
+    # Definição das colunas da tabela
+    id = Column(Integer, primary_key=True, index=True)  # Chave primária
+    title = Column(String(200), nullable=False)  # Título da tarefa
+    description = Column(Text, nullable=False)  # Descrição detalhada
+    creator_id = Column(Integer, ForeignKey("users.id"), nullable=False)  # ID do professor criador
+    created_at = Column(DateTime, default=lambda: datetime.now(BRASILIA_TZ))  # Data de criação
+    due_date = Column(DateTime, nullable=True)  # Data limite (opcional)
+    max_score = Column(Integer, default=100)  # Pontuação máxima (padrão 100)
     
     # Relacionamentos
     creator = relationship("User", back_populates="tasks_created", foreign_keys=[creator_id])
     responses = relationship("TaskResponse", back_populates="task")
 
 class TaskResponse(Base):
-    """Modelo de resposta de tarefa"""
-    __tablename__ = "task_responses"
+    """Modelo que representa as respostas dos alunos às tarefas"""
+    __tablename__ = "task_responses"  # Nome da tabela no banco
     
-    id = Column(Integer, primary_key=True, index=True)
-    task_id = Column(Integer, ForeignKey("tasks.id"), nullable=False)
-    student_id = Column(Integer, ForeignKey("users.id"), nullable=False)
-    response_text = Column(Text, nullable=True)
-    file_data = Column(LargeBinary(length=(10*1024*1024)), nullable=True)  # 10MB limit
-    file_name = Column(String(255), nullable=True)
-    submitted_at = Column(DateTime, default=lambda: datetime.now(BRASILIA_TZ))
-    score = Column(Integer, nullable=True)
-    feedback = Column(Text, nullable=True)
+    # Definição das colunas da tabela
+    id = Column(Integer, primary_key=True, index=True)  # Chave primária
+    task_id = Column(Integer, ForeignKey("tasks.id"), nullable=False)  # ID da tarefa
+    student_id = Column(Integer, ForeignKey("users.id"), nullable=False)  # ID do aluno
+    response_text = Column(Text, nullable=True)  # Resposta em texto (opcional)
+    file_data = Column(LargeBinary(length=(10*1024*1024)), nullable=True)  # Arquivo até 10MB
+    file_name = Column(String(255), nullable=True)  # Nome do arquivo enviado
+    submitted_at = Column(DateTime, default=lambda: datetime.now(BRASILIA_TZ))  # Data de envio
+    score = Column(Integer, nullable=True)  # Nota atribuída (opcional)
+    feedback = Column(Text, nullable=True)  # Comentário do professor (opcional)
     
     # Relacionamentos
     task = relationship("Task", back_populates="responses")
     student = relationship("User", back_populates="responses")
 
 def init_database():
-    """Inicializa o banco de dados criando as tabelas"""
+    """Cria todas as tabelas no banco de dados se elas não existirem"""
     Base.metadata.create_all(bind=engine)
 
 def get_db():
-    """Obtém uma sessão do banco de dados"""
+    """Retorna uma nova sessão de conexão com o banco de dados"""
     db = SessionLocal()
     try:
         return db
     finally:
-        pass
+        pass  # Sessão será fechada manualmente nas funções que a utilizam
 
 def authenticate_user(username: str, password: str):
-    """Autentica um usuário - usado pelo login.py"""
+    """Autentica um usuário verificando suas credenciais no banco"""
     db = get_db()
     try:
+        # Busca usuário com username e senha correspondentes
         user = db.query(User).filter(User.username == username, User.password == password).first()
         if user:
+            # Retorna dicionário com dados do usuário para sessão
             return {
                 'id': user.id,
                 'username': user.username,
-                'ra': user.username,
+                'ra': user.username,  # RA é o mesmo que username
                 'role': user.user_type,
                 'full_name': user.full_name
             }
-        return None
+        return None  # Credenciais inválidas
     finally:
-        db.close()
+        db.close()  # Sempre fecha a conexão
 
 def insert_user(name: str, ra: str, password: str, role: str):
-    """Insere um novo usuário - usado pelo register.py"""
+    """Cadastra um novo usuário no sistema verificando se o RA já existe"""
     db = get_db()
     try:
-        # Verificar se usuário já existe
+        # Verifica se já existe usuário com este RA
         existing_user = db.query(User).filter(User.username == ra).first()
         
         if existing_user:
-            return False
+            return False  # RA já cadastrado
         
-        # Criar novo usuário
+        # Cria novo usuário
         user = User(
             username=ra,
             password=password,
@@ -116,16 +120,17 @@ def insert_user(name: str, ra: str, password: str, role: str):
             user_type=role
         )
         
+        # Salva no banco
         db.add(user)
         db.commit()
-        return True
+        return True  # Cadastro realizado com sucesso
     except:
-        return False
+        return False  # Erro durante o cadastro
     finally:
         db.close()
 
 def get_user_id(ra: str):
-    """Obtém o ID de um usuário pelo RA - usado por vários arquivos"""
+    """Busca o ID interno de um usuário usando seu RA"""
     db = get_db()
     try:
         user = db.query(User).filter(User.username == ra).first()
@@ -134,13 +139,14 @@ def get_user_id(ra: str):
         db.close()
 
 def insert_task(title: str, description: str, due_date, creator_id: int):
-    """Insere uma nova tarefa - usado pelo criar_tarefa.py"""
+    """Cria uma nova tarefa no sistema convertendo data se necessário"""
     db = get_db()
     try:
-        # Converter string de data para datetime se necessário
+        # Converte string de data para datetime se necessário
         if isinstance(due_date, str):
             due_date = datetime.strptime(due_date, '%d/%m/%Y %H:%M')
 
+        # Cria nova tarefa
         task = Task(
             title=title,
             description=description,
@@ -148,6 +154,7 @@ def insert_task(title: str, description: str, due_date, creator_id: int):
             due_date=due_date
         )
 
+        # Salva no banco
         db.add(task)
         db.commit()
         return True
@@ -158,47 +165,53 @@ def insert_task(title: str, description: str, due_date, creator_id: int):
         db.close()
 
 def get_tasks_by_user_id(user_id: int):
-    """Obtém tarefas criadas por um professor - usado pelo ver_tarefa.py"""
+    """Busca todas as tarefas criadas por um professor específico"""
     db = get_db()
     try:
+        # Busca tarefas do professor ordenadas por data de criação (mais recentes primeiro)
         tasks = db.query(Task).filter(Task.creator_id == user_id).order_by(Task.created_at.desc()).all()
+        # Retorna lista de tuplas com dados das tarefas
         return [(t.id, t.title, t.description, str(t.created_at), str(t.due_date)) for t in tasks]
     finally:
         db.close()
 
 def get_all_tasks():
-    """Obtém todas as tarefas - usado pelos alunos"""
+    """Busca todas as tarefas do sistema incluindo nome do professor criador"""
     db = get_db()
     try:
+        # Faz join entre Task e User para pegar nome do professor
         tasks = db.query(Task, User.full_name).join(User, Task.creator_id == User.id).order_by(Task.created_at.desc()).all()
+        # Retorna lista incluindo nome do professor
         return [(t.id, t.title, t.description, str(t.created_at), str(t.due_date), user_full_name) for t, user_full_name in tasks]
     finally:
         db.close()
 
 def update_task(task_id: int, title: str, description: str, due_date):
-    """Atualiza uma tarefa - usado pelo editar_tarefa.py"""
+    """Atualiza os dados de uma tarefa existente"""
     db = get_db()
     try:
+        # Busca a tarefa pelo ID
         task = db.query(Task).filter(Task.id == task_id).first()
         if task:
+            # Atualiza os campos
             task.title = title
             task.description = description
             task.due_date = due_date
             db.commit()
             return True
-        return False
+        return False  # Tarefa não encontrada
     finally:
         db.close()
 
 def delete_task(task_id: int):
-    """Deleta uma tarefa - usado pelo detalhe_tarefa.py"""
+    """Remove uma tarefa e todas as suas respostas do sistema"""
     db = get_db()
     try:
         task = db.query(Task).filter(Task.id == task_id).first()
         if task:
-            # Primeiro deletar todas as respostas relacionadas
+            # Primeiro remove todas as respostas relacionadas
             db.query(TaskResponse).filter(TaskResponse.task_id == task_id).delete()
-            # Depois deletar a tarefa
+            # Depois remove a tarefa
             db.delete(task)
             db.commit()
             return True
@@ -207,22 +220,22 @@ def delete_task(task_id: int):
         db.close()
 
 def insert_student_response(task_id: int, student_id: int, filename: str, file_data: bytes):
-    """Insere resposta de aluno - usado pelo detalhe_tarefa_aluno.py"""
+    """Salva ou atualiza a resposta de um aluno para uma tarefa"""
     db = get_db()
     try:
-        # Verificar se já existe uma resposta
+        # Verifica se já existe resposta deste aluno para esta tarefa
         existing_response = db.query(TaskResponse).filter(
             TaskResponse.task_id == task_id,
             TaskResponse.student_id == student_id
         ).first()
 
         if existing_response:
-            # Atualizar resposta existente
+            # Atualiza resposta existente
             existing_response.file_data = file_data
             existing_response.file_name = filename
             existing_response.submitted_at = datetime.now(BRASILIA_TZ)
         else:
-            # Criar nova resposta
+            # Cria nova resposta
             response = TaskResponse(
                 task_id=task_id,
                 student_id=student_id,
@@ -241,7 +254,7 @@ def insert_student_response(task_id: int, student_id: int, filename: str, file_d
         db.close()
 
 def get_student_response(task_id: int, student_id: int):
-    """Obtém resposta de um aluno para uma tarefa - usado por vários arquivos"""
+    """Busca a resposta de um aluno específico para uma tarefa"""
     db = get_db()
     try:
         response = db.query(TaskResponse).filter(
@@ -249,45 +262,50 @@ def get_student_response(task_id: int, student_id: int):
             TaskResponse.student_id == student_id
         ).first()
         if response:
+            # Retorna tupla com dados da resposta
             return (response.file_name, response.file_data, str(response.submitted_at), response.score, response.feedback)
         return None
     finally:
         db.close()
 
 def get_students_who_responded(task_id: int):
-    """Obtém lista de alunos que responderam uma tarefa - usado pelo detalhe_tarefa.py"""
+    """Lista todos os alunos que enviaram respostas para uma tarefa específica"""
     db = get_db()
     try:
+        # Faz join entre TaskResponse e User para pegar dados dos alunos
         responses = db.query(TaskResponse, User).join(User, TaskResponse.student_id == User.id).filter(
             TaskResponse.task_id == task_id
         ).all()
         
         result = []
         for response, user in responses:
+            # Verifica se a resposta já foi avaliada
             has_rating = response.score is not None
             result.append((
-                user.full_name,        # username
-                user.id,               # user_id
-                has_rating,            # has_rating
-                response.score,        # rating
-                response.feedback,     # comment
-                str(response.submitted_at),  # upload_date
-                response.file_name     # filename
+                user.full_name,  # Nome do aluno
+                user.id,  # ID do aluno
+                has_rating,  # Se já foi avaliado
+                response.score,  # Nota (se houver)
+                response.feedback,  # Comentário (se houver)
+                str(response.submitted_at),  # Data de envio
+                response.file_name  # Nome do arquivo
             ))
         return result
     finally:
         db.close()
 
 def update_student_response_rating(task_id: int, student_id: int, rating: int, comment: str):
-    """Atualiza nota e comentário de uma resposta - usado pelo detalhe_resposta_aluno.py"""
+    """Atualiza a nota e comentário de uma resposta de aluno"""
     db = get_db()
     try:
+        # Busca a resposta específica
         response = db.query(TaskResponse).filter(
             TaskResponse.task_id == task_id,
             TaskResponse.student_id == student_id
         ).first()
         
         if response:
+            # Atualiza nota e feedback
             response.score = rating
             response.feedback = comment
             db.commit()

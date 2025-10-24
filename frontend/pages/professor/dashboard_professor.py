@@ -2,10 +2,9 @@ import flet as ft
 from backend.statistics_wrapper import get_statistics_wrapper
 
 class DashboardProfessor(ft.Container):
-    """Dashboard do professor com design clean, moderno e fluido."""
 
     def __init__(self, page: ft.Page, controller):
-        """Inicializa o dashboard com interface moderna."""
+        # Inicializa o dashboard do professor
         super().__init__(
             expand=True,
             width=None,
@@ -16,33 +15,28 @@ class DashboardProfessor(ft.Container):
         self.page = page
         self.controller = controller
         
-        # Obter wrapper de estatísticas
         self.stats_wrapper = get_statistics_wrapper()
 
         self.create_components()
         self.setup_layout()
 
     def get_real_statistics(self):
-        """Obtém estatísticas reais do banco de dados via funções C"""
+        # Obtém estatísticas reais do banco de dados
         if not self.controller.current_user:
             return {"tarefas": "0", "alunos": "0", "avaliacoes": "0"}
         
         professor_id = self.controller.current_user['id']
         
-        # Obter estatísticas em tempo real
         stats = {"tarefas": "0", "alunos": "0", "avaliacoes": "0"}
         
         try:
             if self.stats_wrapper and self.stats_wrapper.lib:
-                # Total de tarefas ativas do professor
                 tarefas = self.stats_wrapper.get_professor_active_tasks(professor_id)
                 stats["tarefas"] = str(tarefas)
                 
-                # Total de alunos cadastrados
                 alunos = self.stats_wrapper.get_total_students()
                 stats["alunos"] = str(alunos)
                 
-                # Total de respostas avaliadas pelo professor
                 avaliacoes = self.stats_wrapper.get_professor_evaluated_responses(professor_id)
                 stats["avaliacoes"] = str(avaliacoes)
         except:
@@ -51,12 +45,10 @@ class DashboardProfessor(ft.Container):
         return stats
 
     def update_statistics(self):
-        """Atualiza as estatísticas em tempo real"""
+        # Atualiza as estatísticas em tempo real
         real_stats = self.get_real_statistics()
         
-        # Atualizar os valores nos cards de estatísticas
         if hasattr(self, 'stats_row') and self.stats_row.controls:
-            # Card de tarefas ativas
             if len(self.stats_row.controls) > 0:
                 card = self.stats_row.controls[0]
                 if hasattr(card, 'content') and hasattr(card.content, 'controls'):
@@ -66,7 +58,6 @@ class DashboardProfessor(ft.Container):
                         if hasattr(column, 'controls') and len(column.controls) > 0:
                             column.controls[0].value = real_stats["tarefas"]
             
-            # Card de alunos
             if len(self.stats_row.controls) > 1:
                 card = self.stats_row.controls[1]
                 if hasattr(card, 'content') and hasattr(card.content, 'controls'):
@@ -76,7 +67,6 @@ class DashboardProfessor(ft.Container):
                         if hasattr(column, 'controls') and len(column.controls) > 0:
                             column.controls[0].value = real_stats["alunos"]
             
-            # Card de avaliações
             if len(self.stats_row.controls) > 2:
                 card = self.stats_row.controls[2]
                 if hasattr(card, 'content') and hasattr(card.content, 'controls'):
@@ -86,16 +76,13 @@ class DashboardProfessor(ft.Container):
                         if hasattr(column, 'controls') and len(column.controls) > 0:
                             column.controls[0].value = real_stats["avaliacoes"]
         
-        # Atualizar a página
         self.page.update()
 
     def create_components(self):
-        """Cria todos os componentes da interface"""
+        # Cria todos os componentes da interface
         
-        # Nome do usuário
         fullname = self.controller.current_user['full_name'] if self.controller.current_user else "Professor"
         
-        # Avatar moderno e clean - MAIOR
         self.user_avatar = ft.Container(
             content=ft.Image(
                 src="frontend/assets/personagem_3.png",
@@ -125,7 +112,6 @@ class DashboardProfessor(ft.Container):
             border=ft.border.all(4, ft.colors.PINK_100)
         )
 
-        # Botão de logout clean - MAIOR
         self.logout_button = ft.Container(
             content=ft.Row([
                 ft.Icon(ft.icons.LOGOUT_ROUNDED, color=ft.colors.PINK_500, size=24),
@@ -146,7 +132,6 @@ class DashboardProfessor(ft.Container):
             on_click=self.logout
         )
 
-        # Cards de ação modernos e clean - MAIORES
         self.create_task_card = self.create_action_card(
             title="Criar Tarefa",
             subtitle="Crie uma nova tarefa\npara seus alunos",
@@ -163,10 +148,8 @@ class DashboardProfessor(ft.Container):
             action=self.go_to_ver_tarefa
         )
 
-        # Obter estatísticas reais
         real_stats = self.get_real_statistics()
 
-        # Estatísticas clean - MAIORES com dados reais
         self.stats_row = ft.Row([
             self.create_stat_card("Tarefas Ativas", real_stats["tarefas"], ft.icons.TASK_ALT_ROUNDED, ft.colors.PINK_400),
             self.create_stat_card("Alunos", real_stats["alunos"], ft.icons.PEOPLE_ROUNDED, ft.colors.PURPLE_400),
@@ -174,10 +157,9 @@ class DashboardProfessor(ft.Container):
         ], spacing=60, alignment=ft.MainAxisAlignment.CENTER)
 
     def create_action_card(self, title, subtitle, icon, primary_color, action):
-        """Cria um card de ação moderno e clean - MAIOR"""
+        # Cria um card de ação para o dashboard
         return ft.Container(
             content=ft.Column([
-                # Ícone com design clean - MAIOR
                 ft.Container(
                     content=ft.Icon(icon, size=55, color=primary_color),
                     width=110,
@@ -196,7 +178,6 @@ class DashboardProfessor(ft.Container):
                 
                 ft.Container(height=35),
                 
-                # Título - MAIOR
                 ft.Text(
                     title,
                     size=26,
@@ -207,7 +188,6 @@ class DashboardProfessor(ft.Container):
                 
                 ft.Container(height=12),
                 
-                # Subtítulo - MAIOR
                 ft.Text(
                     subtitle,
                     size=18,
@@ -218,7 +198,6 @@ class DashboardProfessor(ft.Container):
                 
                 ft.Container(height=35),
                 
-                # Botão de ação clean - MAIOR
                 ft.Container(
                     content=ft.Text(
                         "Acessar",
@@ -259,7 +238,7 @@ class DashboardProfessor(ft.Container):
         )
 
     def create_stat_card(self, label, value, icon, color):
-        """Cria um card de estatística clean - MAIOR"""
+        # Cria um card de estatística
         return ft.Container(
             content=ft.Row([
                 ft.Container(
@@ -302,12 +281,10 @@ class DashboardProfessor(ft.Container):
         )
 
     def setup_layout(self):
-        """Configura o layout da página"""
+        # Configura o layout principal da página
         
-        # Header clean - MAIOR
         header = ft.Container(
             content=ft.Row([
-                # Lado esquerdo - Avatar e saudação
                 ft.Row([
                     self.user_avatar,
                     ft.Container(width=30),
@@ -327,13 +304,11 @@ class DashboardProfessor(ft.Container):
                     ], spacing=6)
                 ], alignment=ft.MainAxisAlignment.START),
                 
-                # Lado direito - Controles
                 self.logout_button
             ], alignment=ft.MainAxisAlignment.SPACE_BETWEEN),
             padding=ft.padding.symmetric(horizontal=50, vertical=45)
         )
 
-        # Seção de estatísticas - MAIOR
         stats_section = ft.Container(
             content=ft.Column([
                 ft.Text(
@@ -348,7 +323,6 @@ class DashboardProfessor(ft.Container):
             padding=ft.padding.symmetric(horizontal=50, vertical=35)
         )
 
-        # Seção de ações principais - MAIOR
         actions_section = ft.Container(
             content=ft.Column([
                 ft.Text(
@@ -367,7 +341,6 @@ class DashboardProfessor(ft.Container):
             padding=ft.padding.symmetric(horizontal=50, vertical=35)
         )
 
-        # Layout principal com fundo branco clean
         self.content = ft.Container(
             expand=True,
             width=None,
@@ -387,20 +360,20 @@ class DashboardProfessor(ft.Container):
         )
 
     def did_mount(self):
-        """Chamado quando o componente é montado - atualiza estatísticas"""
+        # Atualiza estatísticas quando o componente é montado
         self.update_statistics()
 
     def logout(self, e):
-        """Executa logout com animação"""
+        # Executa o logout do usuário
         self.controller.current_user = None
         self.controller.show_snackbar("Logout realizado com sucesso!", "success")
         self.controller.show_page("Login")
 
     def go_to_criar_tarefa(self, e):
-        """Navega para criar tarefa"""
+        # Navega para a tela de criar tarefa
         self.controller.current_task = None
         self.controller.show_page("CriarTarefa")
 
     def go_to_ver_tarefa(self, e):
-        """Navega para ver tarefas"""
+        # Navega para a tela de visualizar tarefas
         self.controller.show_page("VerTarefa")

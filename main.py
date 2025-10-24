@@ -1,8 +1,7 @@
-"""
-Sistema Acadêmico Colaborativo
-Aplicação principal usando Flet para interface desktop
-"""
+# Importações das bibliotecas necessárias
 import flet as ft
+
+# Importações das páginas do frontend
 from frontend.pages.login import Login
 from frontend.pages.register import Register
 from frontend.pages.professor.dashboard_professor import DashboardProfessor
@@ -15,101 +14,119 @@ from frontend.pages.professor.detalhe_resposta_aluno import DetalheRespostaAluno
 from frontend.pages.aluno.ver_tarefas_aluno import VerTarefasAluno
 from frontend.pages.aluno.ver_notas_aluno import VerNotasAluno
 from frontend.pages.aluno.detalhe_tarefa_aluno import DetalheTarefaAluno
+
+# Importação da função de inicialização do banco de dados
 from backend.database import init_database
 
 class App:
-    """Classe principal da aplicação"""
+    """Classe principal da aplicação que gerencia toda a interface e navegação"""
 
     def __init__(self, page: ft.Page):
-        """Inicializa a aplicação"""
+        """Inicializa a aplicação principal e configura todas as propriedades da janela"""
+        # Armazena a referência da página principal do Flet
         self.page = page
-        self.page.title = "Sistema Acadêmico Colaborativo"
-        self.page.theme_mode = ft.ThemeMode.LIGHT
-        self.page.scroll = ft.ScrollMode.AUTO
         
-        # Configurações para tela cheia - FORÇAR ALTURA TOTAL
-        self.page.window.maximized = True
-        self.page.window.full_screen = False
+        # Configurações básicas da aplicação
+        self.page.title = "Sistema Acadêmico Colaborativo"  # Define o título da janela
+        self.page.theme_mode = ft.ThemeMode.LIGHT  # Define tema claro como padrão
+        self.page.scroll = ft.ScrollMode.AUTO  # Habilita scroll automático quando necessário
         
-        # REMOVER padding e spacing que podem limitar a altura
-        self.page.padding = 0
-        self.page.spacing = 0
+        # Configurações de janela para maximizar a área de trabalho
+        self.page.window.maximized = True  # Inicia a janela maximizada
+        self.page.window.full_screen = False  # Não inicia em tela cheia
         
-        # FORÇAR que a página ocupe 100% da altura disponível
+        # Remove espaçamentos desnecessários para aproveitar toda a tela
+        self.page.padding = 0  # Remove padding interno da página
+        self.page.spacing = 0  # Remove espaçamento entre elementos
+        
+        # Força a página a ocupar toda a altura disponível
         self.page.expand = True
         
-        # Configurar tamanho mínimo da janela
-        self.page.window.min_width = 1024
-        self.page.window.min_height = 768
+        # Define tamanhos mínimos da janela para garantir usabilidade
+        self.page.window.min_width = 1024  # Largura mínima de 1024px
+        self.page.window.min_height = 768  # Altura mínima de 768px
         
-        # Configurar tamanho inicial da janela (caso não maximize)
-        self.page.window.width = 1366
-        self.page.window.height = 768
+        # Define tamanho inicial da janela caso não maximize
+        self.page.window.width = 1366  # Largura inicial padrão
+        self.page.window.height = 768  # Altura inicial padrão
 
-        # Inicializar banco de dados
+        # Inicializa o banco de dados criando as tabelas necessárias
         init_database()
 
-        # Estado da aplicação
-        self.current_user = None
-        self.current_task = None
-        self.current_student_response = None
+        # Variáveis de estado da aplicação para controle de dados globais
+        self.current_user = None  # Armazena dados do usuário logado
+        self.current_task = None  # Armazena dados da tarefa sendo visualizada
+        self.current_student_response = None  # Armazena dados da resposta sendo avaliada
 
-        # Dicionário de páginas
+        # Dicionário que mapeia nomes de páginas para suas respectivas classes
         self.pages = {
-            "Login": Login,
-            "Register": Register,
-            "DashboardProfessor": DashboardProfessor,
-            "DashboardAluno": DashboardAluno,
-            "CriarTarefa": CriarTarefa,
-            "VerTarefa": VerTarefa,
-            "DetalheTarefa": DetalheTarefa,
-            "EditarTarefa": EditarTarefa,
-            "DetalheRespostaAluno": DetalheRespostaAluno,
-            "VerTarefasAluno": VerTarefasAluno,
-            "VerNotasAluno": VerNotasAluno,
-            "DetalheTarefaAluno": DetalheTarefaAluno,
+            "Login": Login,  # Página de login
+            "Register": Register,  # Página de cadastro
+            "DashboardProfessor": DashboardProfessor,  # Dashboard do professor
+            "DashboardAluno": DashboardAluno,  # Dashboard do aluno
+            "CriarTarefa": CriarTarefa,  # Página para criar tarefas
+            "VerTarefa": VerTarefa,  # Página para listar tarefas
+            "DetalheTarefa": DetalheTarefa,  # Página de detalhes da tarefa
+            "EditarTarefa": EditarTarefa,  # Página para editar tarefas
+            "DetalheRespostaAluno": DetalheRespostaAluno,  # Página para avaliar respostas
+            "VerTarefasAluno": VerTarefasAluno,  # Página do aluno ver tarefas
+            "VerNotasAluno": VerNotasAluno,  # Página do aluno ver notas
+            "DetalheTarefaAluno": DetalheTarefaAluno,  # Página do aluno ver detalhes da tarefa
         }
 
-        # Página atual
+        # Armazena referência da página atualmente sendo exibida
         self.current_page = None
 
-        # Mostrar login inicial
+        # Inicia a aplicação mostrando a tela de login
         self.show_page("Login")
 
     def show_snackbar(self, message: str, type: str = "info"):
-        """Exibe um snackbar com mensagem"""
+        """Exibe mensagens de notificação temporárias na tela com cores diferentes por tipo"""
+        # Define a cor de fundo baseada no tipo da mensagem
         if type == "success":
-            bgcolor = ft.colors.PINK_600
+            bgcolor = ft.colors.PINK_600  # Rosa para mensagens de sucesso
         elif type == "error":
-            bgcolor = ft.colors.PURPLE_600
+            bgcolor = ft.colors.PURPLE_600  # Roxo escuro para erros
         elif type == "warning":
-            bgcolor = ft.colors.DEEP_PURPLE_600
+            bgcolor = ft.colors.DEEP_PURPLE_600  # Roxo profundo para avisos
         else:
-            bgcolor = ft.colors.PURPLE_400
+            bgcolor = ft.colors.PURPLE_400  # Roxo claro para informações gerais
 
+        # Cria o componente snackbar com a mensagem e configurações
         snackbar = ft.SnackBar(
-            content=ft.Text(message, color=ft.colors.WHITE),
-            bgcolor=bgcolor,
-            duration=3000
+            content=ft.Text(message, color=ft.colors.WHITE),  # Texto branco para contraste
+            bgcolor=bgcolor,  # Cor de fundo definida acima
+            duration=3000  # Duração de 3 segundos na tela
         )
+        
+        # Adiciona o snackbar à sobreposição da página e o exibe
         self.page.overlay.append(snackbar)
-        snackbar.open = True
-        self.page.update()
-
-
+        snackbar.open = True  # Torna o snackbar visível
+        self.page.update()  # Atualiza a interface para mostrar a mudança
 
     def show_page(self, page_name: str):
-        """Navega para uma página específica"""
+        """Navega para uma página específica da aplicação limpando a tela atual"""
+        # Busca a classe da página no dicionário de páginas
         page_class = self.pages[page_name]
+        
+        # Cria uma nova instância da página passando a referência da página e da app
         self.current_page = page_class(self.page, self)
+        
+        # Limpa todo o conteúdo atual da tela
         self.page.clean()
+        
+        # Adiciona a nova página à tela
         self.page.add(self.current_page)
+        
+        # Atualiza a interface para mostrar a nova página
         self.page.update()
 
 def main(page: ft.Page):
-    """Função principal da aplicação"""
+    """Função principal que inicializa a aplicação criando uma instância da classe App"""
+    # Cria uma instância da aplicação passando a página do Flet
     app = App(page)
 
+# Ponto de entrada da aplicação - executa apenas quando o arquivo é executado diretamente
 if __name__ == "__main__":
-    # Executar como aplicação desktop
+    # Inicia a aplicação Flet como aplicação desktop
     ft.app(target=main, view=ft.AppView.FLET_APP)

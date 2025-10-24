@@ -3,10 +3,9 @@ from datetime import datetime
 from backend.database import get_tasks_by_user_id, delete_task
 
 class VerTarefa(ft.Container):
-    """Classe responsável pela visualização de tarefas do professor com design clean e moderno."""
 
     def __init__(self, page: ft.Page, controller):
-        """Inicializa a tela de visualização de tarefas."""
+        # Inicializa a tela de visualização de tarefas
         super().__init__(
             expand=True,
             width=None,
@@ -20,27 +19,25 @@ class VerTarefa(ft.Container):
         self.tasks = []
         self.filtered_tasks = []
         self.search_query = ""
-        self.filter_status = "todas"  # todas, ativas, expiradas
+        self.filter_status = "todas"
         
         self.load_tasks()
         self.create_components()
         self.setup_layout()
 
     def load_tasks(self):
-        """Carrega as tarefas do professor"""
+        # Carrega as tarefas do professor do banco de dados
         if self.controller.current_user and 'id' in self.controller.current_user:
             user_id = self.controller.current_user['id']
             self.tasks = get_tasks_by_user_id(user_id) or []
-            # Ordenar tarefas por data de criação (mais nova primeiro)
             self.tasks.sort(key=lambda x: datetime.strptime(x[3], '%Y-%m-%d %H:%M:%S'), reverse=True)
         else:
             self.tasks = []
         self.filtered_tasks = self.tasks.copy()
 
     def create_components(self):
-        """Cria todos os componentes da interface"""
+        # Cria todos os componentes da interface
         
-        # Botão voltar clean - MAIOR
         self.back_button = ft.Container(
             content=ft.Row([
                 ft.Icon(ft.icons.ARROW_BACK_ROUNDED, color=ft.colors.PINK_500, size=24),
@@ -61,7 +58,6 @@ class VerTarefa(ft.Container):
             on_click=self.go_back
         )
 
-        # Campo de busca clean - MAIOR
         self.search_field = ft.TextField(
             label="Buscar tarefas...",
             width=500,
@@ -88,14 +84,12 @@ class VerTarefa(ft.Container):
             on_change=self.on_search_change
         )
 
-        # Filtros clean - MAIORES
         self.filter_chips = ft.Row([
             self.create_filter_chip("todas", "Todas", ft.icons.LIST_ROUNDED),
             self.create_filter_chip("ativas", "Ativas", ft.icons.SCHEDULE_ROUNDED),
             self.create_filter_chip("expiradas", "Expiradas", ft.icons.SCHEDULE_SEND_ROUNDED)
         ], spacing=15)
 
-        # Botão criar nova tarefa clean - MAIOR
         self.new_task_button = ft.Container(
             content=ft.Row([
                 ft.Icon(ft.icons.ADD_ROUNDED, color=ft.colors.WHITE, size=24),
@@ -115,18 +109,16 @@ class VerTarefa(ft.Container):
             on_click=self.create_new_task
         )
 
-        # Container para lista de tarefas - CENTRALIZADAS
         self.tasks_container = ft.Column(
             spacing=20,
             horizontal_alignment=ft.CrossAxisAlignment.CENTER
         )
         self.update_tasks_display()
 
-        # Estatísticas clean - MAIORES
         self.stats_row = self.create_stats()
 
     def create_filter_chip(self, value, label, icon):
-        """Cria um chip de filtro clean - MAIOR"""
+        # Cria um chip de filtro
         is_selected = self.filter_status == value
         
         return ft.Container(
@@ -155,12 +147,10 @@ class VerTarefa(ft.Container):
         )
 
     def create_task_card(self, task):
-        """Cria um card moderno e clean para cada tarefa - MAIOR e CENTRALIZADO"""
-        # Calcular status da tarefa
+        # Cria um card para cada tarefa
         expiration_date = datetime.strptime(task[4], '%Y-%m-%d %H:%M:%S')
         is_expired = expiration_date < datetime.now()
         
-        # Cores baseadas no status
         if is_expired:
             status_color = ft.colors.RED_400
             status_text = "Expirada"
@@ -170,16 +160,13 @@ class VerTarefa(ft.Container):
             status_text = "Ativa"
             status_icon = ft.icons.SCHEDULE_ROUNDED
 
-        # Card da tarefa clean - MAIOR e CENTRALIZADO
         return ft.Container(
             content=ft.Row([
-                # Conteúdo principal
                 ft.Container(
                     content=ft.Column([
-                        # Cabeçalho com título e status
                         ft.Row([
                             ft.Text(
-                                task[1],  # título
+                                task[1],
                                 size=24,
                                 weight=ft.FontWeight.W_600,
                                 color=ft.colors.GREY_800,
@@ -203,7 +190,6 @@ class VerTarefa(ft.Container):
                         
                         ft.Container(height=15),
                         
-                        # Descrição
                         ft.Text(
                             task[2][:120] + "..." if len(task[2]) > 120 else task[2],
                             size=18,
@@ -213,7 +199,6 @@ class VerTarefa(ft.Container):
                         
                         ft.Container(height=18),
                         
-                        # Informações da tarefa
                         ft.Row([
                             ft.Row([
                                 ft.Icon(ft.icons.CALENDAR_TODAY_ROUNDED, size=20, color=ft.colors.GREY_500),
@@ -237,7 +222,6 @@ class VerTarefa(ft.Container):
                     padding=ft.padding.all(30)
                 ),
                 
-                # Ações clean - MAIORES
                 ft.Container(
                     content=ft.Column([
                         ft.Container(
@@ -259,7 +243,7 @@ class VerTarefa(ft.Container):
                     padding=ft.padding.all(20)
                 )
             ]),
-            width=1000,  # MAIOR
+            width=1000,
             bgcolor=ft.colors.WHITE,
             border_radius=20,
             alignment=ft.alignment.center_left,
@@ -273,7 +257,7 @@ class VerTarefa(ft.Container):
         )
 
     def create_stats(self):
-        """Cria estatísticas das tarefas - MAIORES"""
+        # Cria estatísticas das tarefas
         total_tasks = len(self.tasks)
         active_tasks = len([t for t in self.tasks if datetime.strptime(t[4], '%Y-%m-%d %H:%M:%S') > datetime.now()])
         expired_tasks = total_tasks - active_tasks
@@ -285,7 +269,7 @@ class VerTarefa(ft.Container):
         ], spacing=60, alignment=ft.MainAxisAlignment.CENTER)
 
     def create_stat_card(self, label, value, icon, color):
-        """Cria um card de estatística clean - MAIOR"""
+        # Cria um card de estatística
         return ft.Container(
             content=ft.Row([
                 ft.Container(
@@ -328,9 +312,8 @@ class VerTarefa(ft.Container):
         )
 
     def setup_layout(self):
-        """Configura o layout da página"""
+        # Configura o layout da página
         
-        # Header clean - MAIOR
         header = ft.Container(
             content=ft.Row([
                 self.back_button,
@@ -356,13 +339,11 @@ class VerTarefa(ft.Container):
             padding=ft.padding.symmetric(horizontal=60, vertical=45)
         )
 
-        # Seção de estatísticas - MAIOR
         stats_section = ft.Container(
             content=self.stats_row,
             padding=ft.padding.symmetric(horizontal=60, vertical=25)
         )
 
-        # Seção de filtros e busca - MAIOR
         filters_section = ft.Container(
             content=ft.Row([
                 self.search_field,
@@ -372,7 +353,6 @@ class VerTarefa(ft.Container):
             padding=ft.padding.symmetric(horizontal=60, vertical=25)
         )
 
-        # Lista de tarefas - CENTRALIZADA
         tasks_section = ft.Container(
             content=ft.Column([
                 self.tasks_container
@@ -381,7 +361,6 @@ class VerTarefa(ft.Container):
             alignment=ft.alignment.center
         )
 
-        # Layout principal com fundo branco clean
         self.content = ft.Container(
             expand=True,
             width=None,
@@ -402,11 +381,10 @@ class VerTarefa(ft.Container):
         )
 
     def update_tasks_display(self):
-        """Atualiza a exibição das tarefas - CENTRALIZADA"""
+        # Atualiza a exibição das tarefas na interface
         self.tasks_container.controls.clear()
         
         if not self.filtered_tasks:
-            # Mensagem quando não há tarefas - MAIOR
             empty_state = ft.Container(
                 content=ft.Column([
                     ft.Icon(ft.icons.ASSIGNMENT_ROUNDED, size=80, color=ft.colors.GREY_400),
@@ -429,19 +407,17 @@ class VerTarefa(ft.Container):
             )
             self.tasks_container.controls.append(empty_state)
         else:
-            # Adicionar cards das tarefas - CENTRALIZADAS
             for task in self.filtered_tasks:
                 self.tasks_container.controls.append(self.create_task_card(task))
 
     def on_search_change(self, e):
-        """Callback para mudança na busca"""
+        # Processa mudança no campo de busca
         self.search_query = e.control.value.lower()
         self.apply_filters()
 
     def change_filter(self, filter_value):
-        """Muda o filtro ativo"""
+        # Muda o filtro ativo de status das tarefas
         self.filter_status = filter_value
-        # Recriar chips com nova seleção
         self.filter_chips.controls = [
             self.create_filter_chip("todas", "Todas", ft.icons.LIST_ROUNDED),
             self.create_filter_chip("ativas", "Ativas", ft.icons.SCHEDULE_ROUNDED),
@@ -451,36 +427,32 @@ class VerTarefa(ft.Container):
         self.page.update()
 
     def apply_filters(self):
-        """Aplica filtros e busca"""
+        # Aplica filtros de busca e status às tarefas
         filtered = self.tasks.copy()
         
-        # Filtro por status
         if self.filter_status == "ativas":
             filtered = [t for t in filtered if datetime.strptime(t[4], '%Y-%m-%d %H:%M:%S') > datetime.now()]
         elif self.filter_status == "expiradas":
             filtered = [t for t in filtered if datetime.strptime(t[4], '%Y-%m-%d %H:%M:%S') <= datetime.now()]
         
-        # Filtro por busca
         if self.search_query:
             filtered = [t for t in filtered if 
-                       self.search_query in t[1].lower() or  # título
-                       self.search_query in t[2].lower()]    # descrição
+                       self.search_query in t[1].lower() or
+                       self.search_query in t[2].lower()]
         
         self.filtered_tasks = filtered
         self.update_tasks_display()
         self.page.update()
 
     def view_task_details(self, task):
-        """Visualiza detalhes da tarefa"""
+        # Navega para a tela de detalhes da tarefa
         self.controller.current_task = task
         self.controller.show_page("DetalheTarefa")
 
-
-
     def create_new_task(self, e):
-        """Cria nova tarefa"""
+        # Navega para a tela de criar nova tarefa
         self.controller.show_page("CriarTarefa")
 
     def go_back(self, e):
-        """Volta para o dashboard"""
+        # Retorna para o dashboard do professor
         self.controller.show_page("DashboardProfessor")

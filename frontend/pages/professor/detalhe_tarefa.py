@@ -3,10 +3,9 @@ from backend.database import get_students_who_responded, delete_task
 from datetime import datetime
 
 class DetalheTarefa(ft.Container):
-    """Classe responsável pela tela de detalhes da tarefa do professor com design clean."""
 
     def __init__(self, page: ft.Page, controller):
-        """Inicializa a tela de detalhes da tarefa."""
+        # Inicializa a tela de detalhes da tarefa
         super().__init__(
             expand=True,
             width=None,
@@ -21,9 +20,8 @@ class DetalheTarefa(ft.Container):
         self.setup_layout()
 
     def create_components(self):
-        """Cria todos os componentes da interface"""
+        # Cria todos os componentes da interface
         
-        # Botão voltar clean - MAIOR
         self.back_button = ft.Container(
             content=ft.Row([
                 ft.Icon(ft.icons.ARROW_BACK_ROUNDED, color=ft.colors.PINK_500, size=24),
@@ -44,7 +42,6 @@ class DetalheTarefa(ft.Container):
             on_click=self.go_back
         )
 
-        # Container para detalhes da tarefa - MAIOR
         self.task_details_container = ft.Container(
             bgcolor=ft.colors.WHITE,
             border_radius=25,
@@ -58,13 +55,11 @@ class DetalheTarefa(ft.Container):
             border=ft.border.all(1, ft.colors.with_opacity(0.05, ft.colors.BLACK))
         )
 
-        # Container para respostas dos alunos - MAIOR
         self.responses_container = ft.Column(
             scroll=ft.ScrollMode.AUTO,
             spacing=20
         )
 
-        # Botões de ação clean - MAIORES
         self.edit_button = ft.Container(
             content=ft.Row([
                 ft.Icon(ft.icons.EDIT_ROUNDED, color=ft.colors.WHITE, size=24),
@@ -104,9 +99,8 @@ class DetalheTarefa(ft.Container):
         )
 
     def setup_layout(self):
-        """Configura o layout da página"""
+        # Configura o layout da página
         
-        # Header clean - MAIOR
         header = ft.Container(
             content=ft.Row([
                 self.back_button,
@@ -131,7 +125,6 @@ class DetalheTarefa(ft.Container):
             padding=ft.padding.symmetric(horizontal=60, vertical=45)
         )
 
-        # Seção de detalhes da tarefa - MAIOR
         task_section = ft.Container(
             content=ft.Column([
                 self.task_details_container,
@@ -145,7 +138,6 @@ class DetalheTarefa(ft.Container):
             padding=ft.padding.symmetric(horizontal=60, vertical=25)
         )
 
-        # Seção de respostas - MAIOR
         responses_section = ft.Container(
             content=ft.Column([
                 ft.Text(
@@ -175,7 +167,6 @@ class DetalheTarefa(ft.Container):
             padding=ft.padding.symmetric(horizontal=60, vertical=25)
         )
 
-        # Layout principal com fundo branco clean
         self.content = ft.Container(
             expand=True,
             width=None,
@@ -194,15 +185,13 @@ class DetalheTarefa(ft.Container):
             )
         )
 
-        # Carregar detalhes inicialmente
         self.refresh()
 
     def refresh(self):
-        """Atualiza os detalhes da tarefa e respostas dos alunos."""
+        # Atualiza os detalhes da tarefa e respostas dos alunos
         if self.controller.current_task:
             task = self.controller.current_task
             
-            # Detalhes da tarefa - MAIORES
             creation_date = datetime.strptime(task[3], '%Y-%m-%d %H:%M:%S')
             exp_date = datetime.strptime(task[4], '%Y-%m-%d %H:%M:%S')
             is_expired = datetime.now() > exp_date
@@ -288,7 +277,6 @@ class DetalheTarefa(ft.Container):
             self.task_details_container.content = task_info
             self.task_details_container.width = 1000
 
-            # Carregar respostas dos alunos
             self.load_student_responses()
         else:
             self.task_details_container.content = ft.Text(
@@ -300,7 +288,7 @@ class DetalheTarefa(ft.Container):
         self.page.update()
 
     def load_student_responses(self):
-        """Carrega as respostas dos alunos para a tarefa atual."""
+        # Carrega as respostas dos alunos para a tarefa atual
         self.responses_container.controls.clear()
 
         if self.controller.current_task:
@@ -336,7 +324,6 @@ class DetalheTarefa(ft.Container):
                 )
             else:
                 for response in responses:
-                    # Estrutura correta: (username, user_id, has_rating, rating, comment, upload_date, filename)
                     student_name = response[0]
                     user_id = response[1]
                     has_rating = response[2]
@@ -353,7 +340,6 @@ class DetalheTarefa(ft.Container):
                         except ValueError:
                             submission_date = datetime.now()
 
-                    # Determinar se foi corrigido
                     is_graded = rating is not None
 
                     response_card = ft.Container(
@@ -443,16 +429,16 @@ class DetalheTarefa(ft.Container):
         self.page.update()
 
     def show_response_detail(self, response):
-        """Exibe os detalhes da resposta do aluno."""
+        # Exibe os detalhes da resposta do aluno
         self.controller.current_student_response = response
         self.controller.show_page("DetalheRespostaAluno")
 
     def edit_task(self, e):
-        """Edita a tarefa atual."""
+        # Navega para a tela de editar tarefa
         self.controller.show_page("EditarTarefa")
 
     def confirm_delete_task(self, e):
-        """Abre o diálogo de confirmação de exclusão."""
+        # Abre diálogo de confirmação para exclusão da tarefa
         def delete_confirmed(e):
             dialog.open = False
             self.page.update()
@@ -496,5 +482,5 @@ class DetalheTarefa(ft.Container):
         self.page.update()
 
     def go_back(self, e):
-        """Volta para a tela de ver tarefas."""
+        # Retorna para a tela de visualizar tarefas
         self.controller.show_page("VerTarefa")
